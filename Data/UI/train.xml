@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<element type="Window">
+	<attribute name="Name" value="bk" />
+	<attribute name="Size" value="800 600" />
+	<attribute name="Pivot" value="0 0" />
+	<attribute name="Image Rect" value="48 0 64 16" />
+	<attribute name="Border" value="4 4 4 4" />
+	<attribute name="Resize Border" value="8 8 8 8" />
+	<element type="Window">
+		<attribute name="Name" value="bk_1" />
+		<attribute name="Size" value="512 512" />
+		<attribute name="Pivot" value="0 0" />
+        <attribute name="Texture" value="Texture2D;Textures/train_bk.jpg" />
+		<attribute name="Image Rect" value="0 0 502 471" />
+		<attribute name="Border" value="4 4 4 4" />
+		<attribute name="Resize Border" value="8 8 8 8" />
+		<attribute name="Horiz Alignment" value="Center" />
+		<attribute name="Vert Alignment" value="Center" />
+		<element type="Text">
+			<attribute name="Name" value="title" />
+			<attribute name="Position" value="15 25" />
+			<attribute name="Min Anchor" value="0.5 0" />
+			<attribute name="Max Anchor" value="0.5 0" />
+			<attribute name="Pivot" value="0.5 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font Size" value="12" />
+        	<attribute name="Color" value="0.4 0.2 0" />
+			<attribute name="Text" value="title" />
+			<attribute name="Word Wrap" value="true" />
+			<attribute name="Size" value="500 25" />
+			<attribute name="Max Size" value="500 25" />
+		</element>
+		<element type="Button">
+			<attribute name="Name" value="btn_1" />
+			<attribute name="Position" value="0 110" />
+			<attribute name="Size" value="425 42" />
+			<attribute name="Min Anchor" value="0.5 0" />
+			<attribute name="Max Anchor" value="0.5 0" />
+			<attribute name="Pivot" value="0.5 0" />
+        	<attribute name="Texture" value="Texture2D;Textures/button.png" />
+			<attribute name="Image Rect" value="0 0 425 40" />
+			<attribute name="Border" value="4 4 4 4" />
+			<attribute name="Hover Image Offset" value="0 38" />
+			<attribute name="Pressed Image Offset" value="0 38" />
+			<attribute name="Disabled Image Offset" value="0 38" />
+			<attribute name="Pressed Child Offset" value="2 2" />
+			<element type="Text">
+				<attribute name="Name" value="btnText_1" />
+				<attribute name="Min Anchor" value="0.5 0.5" />
+				<attribute name="Max Anchor" value="0.5 0.5" />
+				<attribute name="Pivot" value="0.5 0.5" />
+				<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Font Size" value="15" />
+        		<attribute name="Color" value="0.41 0.2 0" />
+				<attribute name="Text" value="btn_1" />
+			</element>
+		</element>
+		<element type="Button">
+			<attribute name="Name" value="btn_2" />
+			<attribute name="Position" value="0 180" />
+			<attribute name="Size" value="425 42" />
+			<attribute name="Min Anchor" value="0.5 0" />
+			<attribute name="Max Anchor" value="0.5 0" />
+			<attribute name="Pivot" value="0.5 0" />
+        	<attribute name="Texture" value="Texture2D;Textures/button.png" />
+			<attribute name="Image Rect" value="0 0 425 40" />
+			<attribute name="Border" value="4 4 4 4" />
+			<attribute name="Hover Image Offset" value="0 38" />
+			<attribute name="Pressed Image Offset" value="0 38" />
+			<attribute name="Disabled Image Offset" value="0 38" />
+			<attribute name="Pressed Child Offset" value="2 2" />
+			<element type="Text">
+				<attribute name="Name" value="btnText_2" />
+				<attribute name="Min Anchor" value="0.5 0.5" />
+				<attribute name="Max Anchor" value="0.5 0.5" />
+				<attribute name="Pivot" value="0.5 0.5" />
+				<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Font Size" value="15" />
+        		<attribute name="Color" value="0.41 0.2 0" />
+				<attribute name="Text" value="btn_2" />
+			</element>
+		</element>
+		<element type="Button">
+			<attribute name="Name" value="btn_3" />
+			<attribute name="Position" value="0 250" />
+			<attribute name="Size" value="425 42" />
+			<attribute name="Min Anchor" value="0.5 0" />
+			<attribute name="Max Anchor" value="0.5 0" />
+			<attribute name="Pivot" value="0.5 0" />
+        	<attribute name="Texture" value="Texture2D;Textures/button.png" />
+			<attribute name="Image Rect" value="0 0 425 40" />
+			<attribute name="Border" value="4 4 4 4" />
+			<attribute name="Hover Image Offset" value="0 38" />
+			<attribute name="Pressed Image Offset" value="0 38" />
+			<attribute name="Disabled Image Offset" value="0 38" />
+			<attribute name="Pressed Child Offset" value="2 2" />
+			<element type="Text">
+				<attribute name="Name" value="btnText_3" />
+				<attribute name="Min Anchor" value="0.5 0.5" />
+				<attribute name="Max Anchor" value="0.5 0.5" />
+				<attribute name="Pivot" value="0.5 0.5" />
+				<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Font Size" value="15" />
+        		<attribute name="Color" value="0.41 0.2 0" />
+				<attribute name="Text" value="btn_3" />
+			</element>
+		</element>
+		<element type="Button">
+			<attribute name="Name" value="btn_4" />
+			<attribute name="Position" value="0 320" />
+			<attribute name="Size" value="425 42" />
+			<attribute name="Min Anchor" value="0.5 0" />
+			<attribute name="Max Anchor" value="0.5 0" />
+			<attribute name="Pivot" value="0.5 0" />
+        	<attribute name="Texture" value="Texture2D;Textures/button.png" />
+			<attribute name="Image Rect" value="0 0 425 40" />
+			<attribute name="Border" value="4 4 4 4" />
+			<attribute name="Hover Image Offset" value="0 38" />
+			<attribute name="Pressed Image Offset" value="0 38" />
+			<attribute name="Disabled Image Offset" value="0 38" />
+			<attribute name="Pressed Child Offset" value="2 2" />
+			<element type="Text">
+				<attribute name="Name" value="btnText_4" />
+				<attribute name="Min Anchor" value="0.5 0.5" />
+				<attribute name="Max Anchor" value="0.5 0.5" />
+				<attribute name="Pivot" value="0.5 0.5" />
+				<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+				<attribute name="Font Size" value="15" />
+        		<attribute name="Color" value="0.41 0.2 0" />
+				<attribute name="Text" value="btn_4" />
+			</element>
+		</element>
+		<element type="Text">
+			<attribute name="Name" value="win" />
+			<attribute name="Position" value="0 410" />
+			<attribute name="Min Anchor" value="0.5 0" />
+			<attribute name="Max Anchor" value="0.5 0" />
+			<attribute name="Pivot" value="0.5 0" />
+			<attribute name="Color" value="1 0 1 1" />
+			<attribute name="Top Left Color" value="1 0 1 1" />
+			<attribute name="Top Right Color" value="1 0 1 1" />
+			<attribute name="Bottom Left Color" value="1 0 1 1" />
+			<attribute name="Bottom Right Color" value="1 0 1 1" />
+			<attribute name="Font Size" value="25" />
+			<attribute name="Text" value="Win" />
+		</element>
+	</element>
+</element>
