@@ -8,12 +8,15 @@ require "scripts/network/Bundle"
 require "scripts/network/Mailbox"
 require "scripts/network/Entity"
 require "scripts/network/PersistentInfos"
+require "scripts/libs/Base"
 
 
 
 -----------------可配置信息---------------
-KBEngineLua.ip = "127.0.0.1";
-KBEngineLua.port = "20013";
+-- KBEngineLua.ip = "192.168.56.101";
+-- KBEngineLua.port = "20013";
+KBEngineLua.ip = "192.168.56.1";
+KBEngineLua.port = "2345";
 -- Mobile(Phone, Pad)	= 1,
 -- Windows Application program	= 2,
 -- Linux Application program = 3,	
@@ -119,6 +122,11 @@ end
 KBEngineLua.init = function()
 	print("network init")
 	this._networkInterface = network;
+end
+
+function HandleConnectionStatus(eventType, eventData)
+	print ("lj status");
+	this.onConnectTo_loginapp_callback(this.ip, this.port, 1, nil);
 end
 
 KBEngineLua.Destroy = function()
@@ -1527,6 +1535,7 @@ KBEngineLua._updateVolatileData = function(entityID, x, y, z, yaw, pitch, roll, 
 end
 
 KBEngineLua.login = function( username, password, data )
+	print ('lj kbe', username, password, data);
 	KBEngineLua.username = username;
 	KBEngineLua.password = password;
     KBEngineLua._clientdatas = data;
@@ -1538,7 +1547,10 @@ end
 KBEngineLua.login_loginapp = function( noconnect )
 	if noconnect then
 		this.reset();
-		this._networkInterface:connectTo(this.ip, this.port, this.onConnectTo_loginapp_callback, nil);
+		this._networkInterface:Connect(this.ip, this.port, scene_);
+
+		local serverConnection = this._networkInterface:GetServerConnection();
+		print ("lj conn", serverConnection, serverConnection:IsClient(), this._networkInterface.serverRunning)
 	else
 		log("KBEngine::login_loginapp(): send login! username=" .. this.username);
 		local bundle = KBEngineLua.Bundle:New();
@@ -1582,9 +1594,8 @@ end
 KBEngineLua.login_baseapp = function(noconnect)
 	if(noconnect) then
 		--Event.fireOut("onLoginBaseapp", new object[]{});
-		this._networkInterface:reset();
-		this._networkInterface = KBEngine.NetworkInterface.New();
-		this._networkInterface:connectTo(this.baseappIP, this.baseappPort, this.onConnectTo_baseapp_callback, nil);
+		this._networkInterface:Disconnect();
+		this._networkInterface:Connect(this.baseappIP, this.baseappPort, this.onConnectTo_baseapp_callback, nil);
 	else
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Baseapp_loginBaseapp"]);
@@ -1711,8 +1722,7 @@ KBEngineLua.reset = function()
 	
 	this.bufferedCreateEntityMessage = {};
 
-	this._networkInterface:reset();
-	this._networkInterface = KBEngine.NetworkInterface.New();
+	this._networkInterface:Disconnect();
 
 	this._lastTickTime = os.clock();
 	this._lastTickCBTime = os.clock();

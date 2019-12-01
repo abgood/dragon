@@ -1,5 +1,6 @@
 
 local game = require 'game.game'
+local libnetwork = require 'network.KBEngine'
 
 local login = {}
 setmetatable(login, login)
@@ -43,6 +44,8 @@ function createLoginUI()
     if button ~= nil then
         SubscribeToEvent(button, "Released", "requestLogin")
     end
+
+	libnetwork.login("123", "456", "789")
 end
 
 function requestLogin()
@@ -51,6 +54,9 @@ function requestLogin()
     local userEdit = layoutRoot:GetChild("user_edit", true)
     local pawdEdit = layoutRoot:GetChild("pawd_edit", true)
 	print ("lj input", userEdit.text, pawdEdit.text)
+	user = userEdit.text;
+	pawd = pawdEdit.text;
+	libnetwork.login(user, pawd)
 end
 
 
