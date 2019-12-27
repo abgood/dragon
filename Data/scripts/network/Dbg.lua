@@ -1,4 +1,6 @@
 
+require "scripts/libs/Base"
+
 Dbg = {}
 local this = Dbg;
 
@@ -46,20 +48,24 @@ end
 
 --debug输出日志--
 function logDbg(str)
-    Dbg.DEBUG_MSG(str);
+    -- Dbg.DEBUG_MSG(str);
+    log:Write(LOG_DEBUG, str)
 end
 
 --输出日志--
-function log(str)
-    Dbg.INFO_MSG(str);
+function logInfo(str)
+    -- Dbg.INFO_MSG(str);
+    log:Write(LOG_INFO, str)
 end
 
 --错误日志--
 function logError(str) 
-	Dbg.ERROR_MSG(str);
+    -- Dbg.ERROR_MSG(str);
+    log:Write(LOG_ERROR, str)
 end
 
 --警告日志--
 function logWarn(str) 
-	Dbg.WARNING_MSG(str);
+    -- Dbg.WARNING_MSG(str);
+    log:Write(LOG_WARNING, str)
 end

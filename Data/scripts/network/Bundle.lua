@@ -10,7 +10,7 @@ function KBEngineLua.Bundle:New()
 	self.__index = self;
 
 	me.streamList = {};
-	me.stream = KBEngine.MemoryStream.New();
+	me.stream = VectorBuffer();
 	me.numMessage = 0;
 	me.messageLength = 0;	
 	me.msgtype = nil;
@@ -44,11 +44,16 @@ function KBEngineLua.Bundle:writeMsgLength()
 	end
 
 	local stream = self.stream;
+	print ("lj a", stream, self.stream, self._curMsgStreamIndex);
 	if(self._curMsgStreamIndex > 0) then
+		print ("lj b", #self.streamList)
 		stream = self.streamList[#self.streamList - self._curMsgStreamIndex];
+		print ("lj c", stream);
 	end
 
-	local data = stream:data();
+	print ("lj d", stream);
+	local data = stream:GetData();
+	print ("lj e", data);
 
 	data[2] = bit.band(self.messageLength, 0xff);
 	data[3] = bit.band(bit.rshift(self.messageLength,8) , 0xff);
@@ -59,7 +64,7 @@ function KBEngineLua.Bundle:fini(issend)
 	if(self.numMessage > 0) then
 		self:writeMsgLength();
 		table.insert(self.streamList, self.stream);
-		self.stream = KBEngine.MemoryStream.New();
+		self.stream = VectorBuffer();
 	end
 	
 	if issend then
@@ -75,23 +80,25 @@ function KBEngineLua.Bundle:send()
 	
 	self:fini(true);
 	
-	if(networkInterface:valid()) then
+	if(networkInterface.serverConnection:IsConnected()) then
 		for i = 1, #self.streamList, 1 do
 			self.stream = self.streamList[i];
-			networkInterface:send(self.stream);
+			print ("lj sendmsg", self.stream);
+			networkInterface.serverConnection:SendMessage(0, true, true, self.stream);
 		end
 	else
-		log("Bundle::send: networkInterface invalid!");  
+		logInfo("Bundle::send: networkInterface invalid!");  
 	end
 	
 	self.streamList = {};
-	self.stream:clear();
+	self.stream:Clear();
 end
 
 function KBEngineLua.Bundle:checkStream(v)
-	if(v > self.stream:space()) then
+	print ("lj check", v, self.stream:GetSize());
+	if(v > self.stream:GetSize()) then
 		table.insert(self.streamList, self.stream);
-		self.stream = KBEngine.MemoryStream.New();
+		self.stream = VectorBuffer();
 		self._curMsgStreamIndex = self._curMsgStreamIndex + 1;
 	end
 	self.messageLength = self.messageLength + v;
@@ -100,60 +107,65 @@ end
 ---------------------------------------------------------------------------------
 function KBEngineLua.Bundle:writeInt8(v)
 	self:checkStream(1);
-	self.stream:writeInt8(v);
+	self.stream:WriteInt8(v);
 end
 
 function KBEngineLua.Bundle:writeInt16(v)
 	self:checkStream(2);
-	self.stream:writeInt16(v);
+	self.stream:WriteShort(v);
 end
 	
 function KBEngineLua.Bundle:writeInt32(v)
 	self:checkStream(4);
-	self.stream:writeInt32(v);
+	self.stream:WriteInt(v);
 end
 
 function KBEngineLua.Bundle:writeInt64(v)
 	self:checkStream(8);
-	self.stream:writeInt64(v);
+	self.stream:WriteInt64(v);
 end
 
 function KBEngineLua.Bundle:writeUint8(v)
 	self:checkStream(1);
-	self.stream:writeUint8(v);
+	self.stream:WriteUint8(v);
 end
 
 function KBEngineLua.Bundle:writeUint16(v)
 	self:checkStream(2);
-	self.stream:writeUint16(v);
+	print ("lj v", v);
+	self.stream:WriteUShort(v);
+	a = self.stream:ReadUShort();
+	print ("lj a", a, type(a));
 end
 	
 function KBEngineLua.Bundle:writeUint32(v)
 	self:checkStream(4);
-	self.stream:writeUint32(v);
+	self.stream:WriteUint(v);
 end
 
 function KBEngineLua.Bundle:writeUint64(v)
 	self:checkStream(8);
-	self.stream:writeUint64(v);
+	self.stream:WriteUint64(v);
 end
 
 function KBEngineLua.Bundle:writeFloat(v)
 	self:checkStream(4);
-	self.stream:writeFloat(v);
+	self.stream:WriteFloat(v);
 end
 
 function KBEngineLua.Bundle:writeDouble(v)
 	self:checkStream(8);
-	self.stream:writeDouble(v);
+	self.stream:WriteDouble(v);
 end
 
 function KBEngineLua.Bundle:writeString(v)
 	self:checkStream(string.len(v) + 1);
-	self.stream:writeString(v);
+	self.stream:WriteString(v);
 end
 
 function KBEngineLua.Bundle:writeBlob(v)
-	self:checkStream(v.Length + 4);
-	self.stream:writeBlob(v);
+	if #v > 0 then
+		self:checkStream(v.Length + 4);
+		self.stream:WriteBuffer(v);
+	end
 end

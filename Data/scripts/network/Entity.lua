@@ -77,12 +77,12 @@ end
 
 KBEngineLua.Entity.baseCall = function(self, arguments)
 	if(#arguments < 1) then
-		log('KBEngineLua.Entity::baseCall: not fount interfaceName~');  
+		logInfo('KBEngineLua.Entity::baseCall: not fount interfaceName~');  
 		return;
 	end
 
 	if(self.base == nil) then 
-		log('KBEngineLua.Entity::baseCall: base is None~');  
+		logInfo('KBEngineLua.Entity::baseCall: base is None~');  
 		return;			
 	end
 	
@@ -91,7 +91,7 @@ KBEngineLua.Entity.baseCall = function(self, arguments)
 	local args = method[4];
 	
 	if(#arguments - 1 ~= #args) then
-		log("KBEngineLua.Entity::baseCall: args(" .. (#arguments - 1) .. "~= " .. #args .. ") size is error!");  
+		logInfo("KBEngineLua.Entity::baseCall: args(" .. (#arguments - 1) .. "~= " .. #args .. ") size is error!");  
 		return;
 	end
 	
@@ -110,12 +110,12 @@ end
 
 KBEngineLua.Entity.cellCall = function(self, arguments)
 	if(#arguments < 1) then
-		log('KBEngineLua.Entity::cellCall: not fount interfaceName!');  
+		logInfo('KBEngineLua.Entity::cellCall: not fount interfaceName!');  
 		return;
 	end
 	
 	if(self.cell == nil) then
-		log('KBEngineLua.Entity::cellCall: cell is None!');  
+		logInfo('KBEngineLua.Entity::cellCall: cell is None!');  
 		return;			
 	end
 	
@@ -124,7 +124,7 @@ KBEngineLua.Entity.cellCall = function(self, arguments)
 	local args = method[4];
 	
 	if(#arguments - 1 ~= #args) then
-		log("KBEngineLua.Entity::cellCall: args(" .. (#arguments - 1) .. "~= " .. #args .. ") size is error!");  
+		logInfo("KBEngineLua.Entity::cellCall: args(" .. (#arguments - 1) .. "~= " .. #args .. ") size is error!");  
 		return;
 	end
 	
@@ -141,7 +141,7 @@ KBEngineLua.Entity.cellCall = function(self, arguments)
 end
 	
 KBEngineLua.Entity.enterWorld = function(self)
-	--log(self.className .. '::enterWorld: ' .. self.id); 
+	--logInfo(self.className .. '::enterWorld: ' .. self.id); 
 	self.inWorld = true;
 	self:onEnterWorld();
 	
@@ -152,7 +152,7 @@ KBEngineLua.Entity.onEnterWorld = function(self)
 end
 	
 KBEngineLua.Entity.leaveWorld = function(self)
-	--log(self.className .. '::leaveWorld: ' .. self.id); 
+	--logInfo(self.className .. '::leaveWorld: ' .. self.id); 
 	self.inWorld = false;
 	self.onLeaveWorld();
 	
@@ -163,7 +163,7 @@ KBEngineLua.Entity.onLeaveWorld = function(self)
 end
 	
 KBEngineLua.Entity.enterSpace = function(self)
-	log(self.className .. '::enterSpace: ' .. self.id); 
+	logInfo(self.className .. '::enterSpace: ' .. self.id); 
 	self.onEnterSpace();
 	--KBEngine.Event.fire("onEnterSpace", self);
 end
@@ -172,7 +172,7 @@ KBEngineLua.Entity.onEnterSpace = function(self)
 end
 	
 KBEngineLua.Entity.leaveSpace = function(self)
-	log(self.className .. '::leaveSpace: ' .. self.id); 
+	logInfo(self.className .. '::leaveSpace: ' .. self.id); 
 	self.onLeaveSpace();
 	--KBEngine.Event.fire("onLeaveSpace", self);
 end

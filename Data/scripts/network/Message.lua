@@ -45,7 +45,7 @@ end
 	
 function KBEngineLua.Message:handleMessage(msgstream)
 	if self.handler == nil then
-		log("KBEngine.Message::handleMessage: interface(" .. self.name .. "/" .. self.id .. ") no implement!");
+		logInfo("KBEngine.Message::handleMessage: interface(" .. self.name .. "/" .. self.id .. ") no implement!");
 		return;
 	end
 

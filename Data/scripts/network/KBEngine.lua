@@ -8,15 +8,14 @@ require "scripts/network/Bundle"
 require "scripts/network/Mailbox"
 require "scripts/network/Entity"
 require "scripts/network/PersistentInfos"
+require "scripts/network/Dbg"
 require "scripts/libs/Base"
 
 
 
 -----------------可配置信息---------------
--- KBEngineLua.ip = "192.168.56.101";
--- KBEngineLua.port = "20013";
-KBEngineLua.ip = "192.168.56.1";
-KBEngineLua.port = "2345";
+KBEngineLua.ip = "192.168.56.101";
+KBEngineLua.port = "20013";
 -- Mobile(Phone, Pad)	= 1,
 -- Windows Application program	= 2,
 -- Linux Application program = 3,	
@@ -125,12 +124,11 @@ KBEngineLua.init = function()
 end
 
 function HandleConnectionStatus(eventType, eventData)
-	print ("lj status");
 	this.onConnectTo_loginapp_callback(this.ip, this.port, 1, nil);
 end
 
 KBEngineLua.Destroy = function()
-	log("KBEngine::destroy()");  	
+	logInfo("KBEngine::destroy()");  	
 	this.reset();
 	this.resetMessages();
 end
@@ -154,7 +152,7 @@ KBEngineLua.resetMessages = function()
 	this.moduledefs = {};
 	this.entities = {};
 
-	log("KBEngine::resetMessages()");
+	logInfo("KBEngine::resetMessages()");
 end
 
 KBEngineLua.importMessagesFromMemoryStream = function(loginapp_clientMessages, baseapp_clientMessages,  entitydefMessages, serverErrorsDescr)
@@ -188,13 +186,13 @@ KBEngineLua.importMessagesFromMemoryStream = function(loginapp_clientMessages, b
 	this.isImportServerErrorsDescr_ = true;
 
 	this.currserver = "";
-	log("KBEngine::importMessagesFromMemoryStream(): is successfully!");
+	logInfo("KBEngine::importMessagesFromMemoryStream(): is successfully!");
 	return true;
 end
 
 KBEngineLua.createDataTypeFromStreams = function(stream, canprint)
 	local aliassize = stream:readUint16();
-	log("KBEngineApp::createDataTypeFromStreams: importAlias(size=" .. aliassize .. ")!");
+	logInfo("KBEngineApp::createDataTypeFromStreams: importAlias(size=" .. aliassize .. ")!");
 	
 	while(aliassize > 0)
     do  
@@ -224,7 +222,7 @@ KBEngineLua.createDataTypeFromStream = function(stream, canprint)
 	end
 		
 	if(canprint) then
-		log("KBEngineApp::Client_onImportClientEntityDef: importAlias(" .. name .. ":" .. valname .. ")!");
+		logInfo("KBEngineApp::Client_onImportClientEntityDef: importAlias(" .. name .. ":" .. valname .. ")!");
 	end
 	
 	if(name == "FIXED_DICT") then
@@ -277,7 +275,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 		local base_methodsize = stream:readUint16();
 		local cell_methodsize = stream:readUint16();
 		
-		log("KBEngineApp::Client_onImportClientEntityDef: import(" .. scriptmodule_name .. "), propertys(" .. propertysize .. "), " ..
+		logInfo("KBEngineApp::Client_onImportClientEntityDef: import(" .. scriptmodule_name .. "), propertys(" .. propertysize .. "), " ..
 				"clientMethods(" .. methodsize .. "), baseMethods(" .. base_methodsize .. "), cellMethods(" .. cell_methodsize .. ")~");
 		
 		KBEngineLua.moduledefs[scriptmodule_name] = {};
@@ -322,7 +320,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 				currModuleDefs["usePropertyDescrAlias"] = false;
 			end
 			
-			log("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), property(" .. name .. "/" .. properUtype .. ").");
+			logInfo("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), property(" .. name .. "/" .. properUtype .. ").");
 		end
 		while(methodsize > 0)
 		do
@@ -351,7 +349,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 				currModuleDefs["useMethodDescrAlias"] = false;
 			end
 			
-			log("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), method(" .. name .. ").");
+			logInfo("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), method(" .. name .. ").");
 		end
 
 		while(base_methodsize > 0)
@@ -371,7 +369,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 			end
 			
 			self_base_methods[name] = {methodUtype, aliasID, name, args};
-			log("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), base_method(" .. name .. ").");
+			logInfo("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), base_method(" .. name .. ").");
 		end
 		
 		while(cell_methodsize > 0)
@@ -391,12 +389,12 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 			end
 			
 			self_cell_methods[name] = {methodUtype, aliasID, name, args};
-			log("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), cell_method(" .. name .. ").");
+			logInfo("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), cell_method(" .. name .. ").");
 		end
 		
 		defmethod = KBEngineLua[scriptmodule_name];
 		if defmethod == nil then
-			log("KBEngineApp::Client_onImportClientEntityDef: module(" .. scriptmodule_name .. ") not found~");
+			logInfo("KBEngineApp::Client_onImportClientEntityDef: module(" .. scriptmodule_name .. ") not found~");
 		end
 		
 		for k, value in pairs(currModuleDefs.propertys) do
@@ -420,7 +418,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 			local args = infos[4];
 			
 			if(defmethod ~= nil and defmethod[name] == nil) then
-				log(scriptmodule_name .. ":: method(" .. name .. ") no implement~");
+				logInfo(scriptmodule_name .. ":: method(" .. name .. ") no implement~");
 			end
 		end
 	end
@@ -439,7 +437,7 @@ end
 KBEngineLua.onImportClientMessages = function( stream )
 	local msgcount = stream:readUint16();
 	
-	log("KBEngineApp::onImportClientMessages: start(" .. msgcount .. ") ...!");
+	logInfo("KBEngineApp::onImportClientMessages: start(" .. msgcount .. ") ...!");
 	
 	while(msgcount > 0)
 	do
@@ -462,9 +460,9 @@ KBEngineLua.onImportClientMessages = function( stream )
 		if isClientMethod then
 			handler = KBEngineLua[msgname];
 			if handler == nil then
-				log("KBEngineApp::onImportClientMessages[" .. KBEngineLua.currserver .. "]: interface(" .. msgname .. "/" .. msgid .. ") no implement!");
+				logInfo("KBEngineApp::onImportClientMessages[" .. KBEngineLua.currserver .. "]: interface(" .. msgname .. "/" .. msgid .. ") no implement!");
 			else
-				log("KBEngineApp::onImportClientMessages: import(" .. msgname .. ") successfully!");
+				logInfo("KBEngineApp::onImportClientMessages: import(" .. msgname .. ") successfully!");
 			end
 		end
 	
@@ -505,17 +503,17 @@ KBEngineLua.onImportServerErrorsDescr = function(stream)
 		e.descr = KBELuaUtil.ByteToUtf8(stream:readBlob());
 		
 		this.serverErrs[e.id] = e;
-		--log("Client_onImportServerErrorsDescr: id=" + e.id + ", name=" + e.name + ", descr=" + e.descr);
+		--logInfo("Client_onImportServerErrorsDescr: id=" + e.id + ", name=" + e.name + ", descr=" + e.descr);
 	end
 end
 	-- 从二进制流导入消息协议完毕了
 KBEngineLua.onImportClientMessagesCompleted = function()
-	log("KBEngine::onImportClientMessagesCompleted: successfully! currserver=" .. 
+	logInfo("KBEngine::onImportClientMessagesCompleted: successfully! currserver=" .. 
 		this.currserver .. ", currstate=" .. this.currstate);
 
 	if(this.currserver == "loginapp") then
 		if(not this.isImportServerErrorsDescr_ and not this.loadingLocalMessages_) then
-			log("KBEngine::onImportClientMessagesCompleted(): send importServerErrorsDescr!");
+			logInfo("KBEngine::onImportClientMessagesCompleted(): send importServerErrorsDescr!");
 			this.isImportServerErrorsDescr_ = true;
 			local bundle = KBEngineLua.Bundle:New();
 			bundle:newMessage(KBEngineLua.messages["Loginapp_importServerErrorsDescr"]);
@@ -536,7 +534,7 @@ KBEngineLua.onImportClientMessagesCompleted = function()
 		this.baseappMessageImported_ = true;
 		
 		if(not this.entitydefImported_ and not this.loadingLocalMessages_) then
-			log("KBEngine::onImportClientMessagesCompleted: send importEntityDef(" .. (this.entitydefImported_ and "true" or "false")  .. ") ...");
+			logInfo("KBEngine::onImportClientMessagesCompleted: send importEntityDef(" .. (this.entitydefImported_ and "true" or "false")  .. ") ...");
 			local bundle = KBEngineLua.Bundle:New();
 			bundle:newMessage(KBEngineLua.messages["Baseapp_importClientEntityDef"]);
 			bundle:send();
@@ -547,7 +545,7 @@ KBEngineLua.onImportClientMessagesCompleted = function()
 	end
 end
 KBEngineLua.onImportEntityDefCompleted = function()
-	log("KBEngine::onImportEntityDefCompleted: successfully!");
+	logInfo("KBEngine::onImportEntityDefCompleted: successfully!");
 	this.entitydefImported_ = true;
 	
 	if(not this.loadingLocalMessages_) then
@@ -556,7 +554,7 @@ KBEngineLua.onImportEntityDefCompleted = function()
 end
 KBEngineLua.Client_onCreatedProxies = function(rndUUID, eid, entityType)
 
-	log("KBEngineApp::Client_onCreatedProxies: eid(" .. eid .. "), entityType(" .. entityType .. ")!");
+	logInfo("KBEngineApp::Client_onCreatedProxies: eid(" .. eid .. "), entityType(" .. entityType .. ")!");
 	
 	this.entity_uuid = rndUUID;
 	this.entity_id = eid;
@@ -567,7 +565,7 @@ KBEngineLua.Client_onCreatedProxies = function(rndUUID, eid, entityType)
 	if(entity == nil) then		
 		local runclass = KBEngineLua[entityType];
 		if(runclass == nil) then
-			log("KBEngine::Client_onCreatedProxies: not found module(" .. entityType .. ")!");
+			logInfo("KBEngine::Client_onCreatedProxies: not found module(" .. entityType .. ")!");
 			return;
 		end
 		
@@ -634,7 +632,7 @@ KBEngineLua.onUpdatePropertys_ = function(eid, stream)
 	if(entity == nil) then
 		local entityMessage = KBEngineLua.bufferedCreateEntityMessage[eid];
 		if(entityMessage ~= nil) then
-			log("KBEngineApp::Client_onUpdatePropertys: entity(" .. eid .. ") not found!");
+			logInfo("KBEngineApp::Client_onUpdatePropertys: entity(" .. eid .. ") not found!");
 			return;
 		end
 		
@@ -662,7 +660,7 @@ KBEngineLua.onUpdatePropertys_ = function(eid, stream)
 		local val = propertydata[5]:createFromStream(stream);
 		local oldval = entity[propertydata[3]];
 		
-		--log("KBEngineApp::Client_onUpdatePropertys: " .. entity.className .. "(id=" .. eid  .. " " .. propertydata[3]);
+		--logInfo("KBEngineApp::Client_onUpdatePropertys: " .. entity.className .. "(id=" .. eid  .. " " .. propertydata[3]);
 		
 		entity[propertydata[3]] = val;
 		if(setmethod ~= nil) then
@@ -695,7 +693,7 @@ KBEngineLua.onRemoteMethodCall_ = function(eid, stream)
 	local entity = KBEngineLua.entities[eid];
 	
 	if(entity == nil) then
-		log("KBEngineApp::Client_onRemoteMethodCall: entity(" .. eid .. ") not found!");
+		logInfo("KBEngineApp::Client_onRemoteMethodCall: entity(" .. eid .. ") not found!");
 		return;
 	end
 	
@@ -716,7 +714,7 @@ KBEngineLua.onRemoteMethodCall_ = function(eid, stream)
 	if(entity[methoddata[3]] ~= nil) then
 		entity[methoddata[3]](entity, unpack(args));
 	else
-		log("KBEngineApp::Client_onRemoteMethodCall: entity(" .. eid .. ") not found method(" .. methoddata[2] .. ")!");
+		logInfo("KBEngineApp::Client_onRemoteMethodCall: entity(" .. eid .. ") not found method(" .. methoddata[2] .. ")!");
 	end
 end
 
@@ -750,14 +748,14 @@ KBEngineLua.Client_onEntityEnterWorld = function(stream)
 	end
 	
 	entityType = KBEngineLua.moduledefs[entityType].name;
-	log("KBEngineApp::Client_onEntityEnterWorld: " .. entityType .. "(" .. eid .. "), spaceID(" .. KBEngineLua.spaceID .. "), isOnGround(" .. isOnGround .. ")!");
+	logInfo("KBEngineApp::Client_onEntityEnterWorld: " .. entityType .. "(" .. eid .. "), spaceID(" .. KBEngineLua.spaceID .. "), isOnGround(" .. isOnGround .. ")!");
 	
 	local entity = KBEngineLua.entities[eid];
 	if(entity == nil) then
 		
 		entityMessage = KBEngineLua.bufferedCreateEntityMessage[eid];
 		if(entityMessage == nil) then
-			log("KBEngineApp::Client_onEntityEnterWorld: entity(" .. eid .. ") not found!");
+			logInfo("KBEngineApp::Client_onEntityEnterWorld: entity(" .. eid .. ") not found!");
 			return;
 		end
 		
@@ -832,7 +830,7 @@ end
 KBEngineLua.Client_onEntityLeaveWorld = function(eid)
 	local entity = KBEngineLua.entities[eid];
 	if(entity == nil) then
-		log("KBEngineApp::Client_onEntityLeaveWorld: entity(" .. eid .. ") not found!");
+		logInfo("KBEngineApp::Client_onEntityLeaveWorld: entity(" .. eid .. ") not found!");
 		return;
 	end
 	
@@ -854,11 +852,11 @@ KBEngineLua.Client_onEntityLeaveWorld = function(eid)
 end
 
 KBEngineLua.Client_onEntityDestroyed = function(eid)
-	log("KBEngineApp::Client_onEntityDestroyed: entity(" .. eid .. ")!");
+	logInfo("KBEngineApp::Client_onEntityDestroyed: entity(" .. eid .. ")!");
 	
 	local entity = KBEngineLua.entities[eid];
 	if(entity == nil) then
-		log("KBEngineApp::Client_onEntityDestroyed: entity(" .. eid .. ") not found!");
+		logInfo("KBEngineApp::Client_onEntityDestroyed: entity(" .. eid .. ") not found!");
 		return;
 	end
 
@@ -890,7 +888,7 @@ KBEngineLua.Client_onEntityEnterSpace = function(stream)
 	
 	local entity = KBEngineLua.entities[eid];
 	if(entity == nil) then
-		log("KBEngineApp::Client_onEntityEnterSpace: entity(" .. eid .. ") not found!");
+		logInfo("KBEngineApp::Client_onEntityEnterSpace: entity(" .. eid .. ") not found!");
 		return;
 	end
 	
@@ -904,7 +902,7 @@ end
 KBEngineLua.Client_onEntityLeaveSpace = function(eid)
 	local entity = KBEngineLua.entities[eid];
 	if(entity == nil) then
-		log("KBEngineApp::Client_onEntityLeaveSpace: entity(" .. eid .. ") not found!");
+		logInfo("KBEngineApp::Client_onEntityLeaveSpace: entity(" .. eid .. ") not found!");
 		return;
 	end
 	
@@ -921,12 +919,12 @@ KBEngineLua.Client_onCreateAccountResult = function(stream)
 	Event.Brocast("onCreateAccountResult", retcode, datas);
 
 	if(retcode ~= 0) then
-		log("KBEngineApp::Client_onCreateAccountResult: " .. KBEngineLua.username .. " create is failed! code=" .. KBEngineLua.serverErrs[retcode].name .. "!");
+		logInfo("KBEngineApp::Client_onCreateAccountResult: " .. KBEngineLua.username .. " create is failed! code=" .. KBEngineLua.serverErrs[retcode].name .. "!");
 		return;
 	end
 
 	
-	log("KBEngineApp::Client_onCreateAccountResult: " .. KBEngineLua.username .. " create is successfully!");
+	logInfo("KBEngineApp::Client_onCreateAccountResult: " .. KBEngineLua.username .. " create is successfully!");
 end
 
 
@@ -936,7 +934,7 @@ KBEngineLua.Client_onControlEntity = function(eid, isControlled)
 	local entity = this.entities[eid];
 
 	if (entity == nil) then
-		log("KBEngine::Client_onControlEntity: entity(" .. eid .. ") not found!");
+		logInfo("KBEngine::Client_onControlEntity: entity(" .. eid .. ") not found!");
 		return;
 	end
 
@@ -978,7 +976,7 @@ KBEngineLua.updatePlayerToServer = function()
 
     this._lastUpdateToServerTime = now - (span - 0.05);
 
-    --log(player.position.x .. " " .. player.position.y);
+    --logInfo(player.position.x .. " " .. player.position.y);
 	if(Vector3.Distance(player._entityLastLocalPos, player.position) > 0.001 or Vector3.Distance(player._entityLastLocalDir, player.direction) > 0.001) then
 	
 		-- 记录玩家最后一次上报位置时自身当前的位置
@@ -1049,7 +1047,7 @@ end
 
 KBEngineLua.addSpaceGeometryMapping = function(spaceID, respath)
 
-	log("KBEngineApp::addSpaceGeometryMapping: spaceID(" .. spaceID .. "), respath(" .. respath .. ")!");
+	logInfo("KBEngineApp::addSpaceGeometryMapping: spaceID(" .. spaceID .. "), respath(" .. respath .. ")!");
 	
 	KBEngineLua.spaceID = spaceID;
 	KBEngineLua.spaceResPath = respath;
@@ -1107,12 +1105,12 @@ KBEngineLua.Client_initSpaceData = function(stream)
 		KBEngineLua.Client_setSpaceData(KBEngineLua.spaceID, key, value);
 	end
 	
-	log("KBEngineApp::Client_initSpaceData: spaceID(" .. KBEngineLua.spaceID .. "), datas(" .. KBEngineLua.spacedata["_mapping"] .. ")!");
+	logInfo("KBEngineApp::Client_initSpaceData: spaceID(" .. KBEngineLua.spaceID .. "), datas(" .. KBEngineLua.spacedata["_mapping"] .. ")!");
 end
 
 KBEngineLua.Client_setSpaceData = function(spaceID, key, value)
 
-	log("KBEngineApp::Client_setSpaceData: spaceID(" .. spaceID .. "), key(" .. key .. "), value(" .. value .. ")!");
+	logInfo("KBEngineApp::Client_setSpaceData: spaceID(" .. spaceID .. "), key(" .. key .. "), value(" .. value .. ")!");
 	
 	KBEngineLua.spacedata[key] = value;
 	
@@ -1125,7 +1123,7 @@ end
 
 KBEngineLua.Client_delSpaceData = function(spaceID, key)
 
-	log("KBEngineApp::Client_delSpaceData: spaceID(" .. spaceID .. "), key(" .. key .. ")!");
+	logInfo("KBEngineApp::Client_delSpaceData: spaceID(" .. spaceID .. "), key(" .. key .. ")!");
 	
 	KBEngineLua.spacedata[key] = nil;
 	KBEngine.Event.fire("onDelSpaceData", spaceID, key);
@@ -1185,7 +1183,7 @@ KBEngineLua.Client_onUpdateData = function(stream)
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	local entity = KBEngineLua.entities[eid];
 	if(entity == nil) then
-		log("KBEngineApp::Client_onUpdateData: entity(" .. eid .. ") not found!");
+		logInfo("KBEngineApp::Client_onUpdateData: entity(" .. eid .. ") not found!");
 		return;
 	end
 end
@@ -1195,7 +1193,7 @@ KBEngineLua.Client_onSetEntityPosAndDir = function(stream)
 	local eid = stream:readInt32();
 	local entity = KBEngineLua.entities[eid];
 	if(entity == nil) then
-		log("KBEngineApp::Client_onSetEntityPosAndDir: entity(" .. eid .. ") not found!");
+		logInfo("KBEngineApp::Client_onSetEntityPosAndDir: entity(" .. eid .. ") not found!");
 		return;
 	end
 	
@@ -1483,7 +1481,7 @@ KBEngineLua._updateVolatileData = function(entityID, x, y, z, yaw, pitch, roll, 
 		-- 如果为0且客户端上一步是重登陆或者重连操作并且服务端entity在断线期间一直处于在线状态
 		-- 则可以忽略这个错误, 因为cellapp可能一直在向baseapp发送同步消息， 当客户端重连上时未等
 		-- 服务端初始化步骤开始则收到同步信息, 此时这里就会出错。			
-		log("KBEngineApp::_updateVolatileData: entity(" .. entityID .. ") not found!");
+		logInfo("KBEngineApp::_updateVolatileData: entity(" .. entityID .. ") not found!");
 		return;
 	end
 	
@@ -1546,13 +1544,13 @@ end
 --登录到服务端(loginapp), 登录成功后还必须登录到网关(baseapp)登录流程才算完毕
 KBEngineLua.login_loginapp = function( noconnect )
 	if noconnect then
-		this.reset();
+		this.Destroy();
 		this._networkInterface:Connect(this.ip, this.port, scene_);
 
 		local serverConnection = this._networkInterface:GetServerConnection();
 		print ("lj conn", serverConnection, serverConnection:IsClient(), this._networkInterface.serverRunning)
 	else
-		log("KBEngine::login_loginapp(): send login! username=" .. this.username);
+		logInfo("KBEngine::login_loginapp(): send login! username=" .. this.username);
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Loginapp_login"]);
 		bundle:writeInt8(this.clientType);
@@ -1566,14 +1564,14 @@ end
 KBEngineLua.onConnectTo_loginapp_callback = function( ip, port, success, userData)
 	this._lastTickCBTime = os.clock();
 	if not success then
-		log("KBEngine::login_loginapp(): connect ".. ip.. ":"..port.." is error!");  
+		logInfo("KBEngine::login_loginapp(): connect ".. ip.. ":"..port.." is error!");  
 		return;
 	end
 			
 	this.currserver = "loginapp";
 	this.currstate = "login";
 			
-	log("KBEngine::login_loginapp(): connect ".. ip.. ":"..port.." success!"); 
+	logInfo("KBEngine::login_loginapp(): connect ".. ip.. ":"..port.." success!"); 
 
 	this.hello();	
 end
@@ -1584,7 +1582,7 @@ KBEngineLua.onLogin_loginapp = function()
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Loginapp_importClientMessages"]);
 		bundle:send();
-		log("KBEngine::onLogin_loginapp: send importClientMessages ...");
+		logInfo("KBEngine::onLogin_loginapp: send importClientMessages ...");
 	else
 		this.onImportClientMessagesCompleted();
 	end
@@ -1608,14 +1606,14 @@ end
 KBEngineLua.onConnectTo_baseapp_callback = function(ip, port, success, userData)
 	this._lastTickCBTime = os.clock();
 	if not success then
-		log("KBEngine::login_baseapp(): connect "..ip..":"..port.." is error!");
+		logInfo("KBEngine::login_baseapp(): connect "..ip..":"..port.." is error!");
 		return;
 	end
 	
 	this.currserver = "baseapp";
 	this.currstate = "";
 	
-	log("KBEngine::login_baseapp(): connect "..ip..":"..port.." is successfully!");
+	logInfo("KBEngine::login_baseapp(): connect "..ip..":"..port.." is successfully!");
 
 	this.hello();
 end
@@ -1626,7 +1624,7 @@ KBEngineLua.onLogin_baseapp = function()
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Baseapp_importClientMessages"]);
 		bundle:send();
-		log("KBEngine::onLogin_baseapp: send importClientMessages ...");
+		logInfo("KBEngine::onLogin_baseapp: send importClientMessages ...");
 		--Event.fireOut("Baseapp_importClientMessages", new object[]{});
 	else
 		this.onImportClientMessagesCompleted();
@@ -1634,6 +1632,7 @@ KBEngineLua.onLogin_baseapp = function()
 end
 
 KBEngineLua.hello = function()
+	print ("lj hello", KBEngineLua.currserver);
 
 	local bundle = KBEngineLua.Bundle:New();
 
@@ -1645,7 +1644,7 @@ KBEngineLua.hello = function()
 
 	bundle:writeString(KBEngineLua.clientVersion);
 	bundle:writeString(KBEngineLua.clientScriptVersion);
-	bundle:writeBlob(KBELuaUtil.Utf8ToByte(KBEngineLua._encryptedKey));
+	bundle:writeBlob(KBEngineLua._encryptedKey);
 	bundle:send();
 end
 
@@ -1656,7 +1655,7 @@ KBEngineLua.Client_onHelloCB = function( stream )
 	this.serverEntitydefMD5 = stream:readString();
 	local ctype = stream:readInt32();
 	
-	log("KBEngine::Client_onHelloCB: verInfo(" .. KBEngineLua.serverVersion 
+	logInfo("KBEngine::Client_onHelloCB: verInfo(" .. KBEngineLua.serverVersion 
 		.. "), scriptVersion(".. KBEngineLua.serverScriptVersion .. "), srvProtocolMD5(".. KBEngineLua.serverProtocolMD5 
 		.. "), srvEntitydefMD5(".. KBEngineLua.serverEntitydefMD5 .. "), + ctype(" .. ctype .. ")!");
 	
@@ -1681,7 +1680,7 @@ end
 KBEngineLua.Client_onLoginFailed = function(stream)
 	local failedcode = stream:readUint16();
 	this._serverdatas = stream:readBlob();
-	log("KBEngine::Client_onLoginFailed: failedcode(" .. failedcode .. "), datas(" .. this._serverdatas.Length .. ")!");
+	logInfo("KBEngine::Client_onLoginFailed: failedcode(" .. failedcode .. "), datas(" .. this._serverdatas.Length .. ")!");
 	Event.Brocast("onLoginFailed", failedcode);
 end
 
@@ -1693,7 +1692,7 @@ KBEngineLua.Client_onLoginSuccessfully = function(stream)
 
 	this._serverdatas = stream:readBlob();
 	
-	log("KBEngine::Client_onLoginSuccessfully: accountName(" .. accountName .. "), addr(" .. 
+	logInfo("KBEngine::Client_onLoginSuccessfully: accountName(" .. accountName .. "), addr(" .. 
 			this.baseappIP .. ":" .. this.baseappPort .. "), datas(" .. this._serverdatas.Length .. ")!");
 	
 	this.login_baseapp(true);
@@ -1735,7 +1734,7 @@ end
 
 
 KBEngineLua.onOpenLoginapp_resetpassword = function()
-	log("KBEngine::onOpenLoginapp_resetpassword: successfully!");
+	logInfo("KBEngine::onOpenLoginapp_resetpassword: successfully!");
 	this.currserver = "loginapp";
 	this.currstate = "resetpassword";
 	this._lastTickCBTime = os.clock();
@@ -1744,7 +1743,7 @@ KBEngineLua.onOpenLoginapp_resetpassword = function()
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Loginapp_importClientMessages"]);
 		bundle:send();
-		log("KBEngine::onOpenLoginapp_resetpassword: send importClientMessages ...");
+		logInfo("KBEngine::onOpenLoginapp_resetpassword: send importClientMessages ...");
 	else
 		this.onImportClientMessagesCompleted();
 	end
@@ -1775,20 +1774,20 @@ KBEngineLua.onConnectTo_resetpassword_callback = function(ip, port, success, use
 	this._lastTickCBTime = os.clock();
 
 	if(not success) then
-		log("KBEngine::resetpassword_loginapp(): connect "..ip..":"..port.." is error!");
+		logInfo("KBEngine::resetpassword_loginapp(): connect "..ip..":"..port.." is error!");
 		return;
 	end
 	
-	log("KBEngine::resetpassword_loginapp(): connect "..ip..":"..port.." is success!"); 
+	logInfo("KBEngine::resetpassword_loginapp(): connect "..ip..":"..port.." is success!"); 
 	this.onOpenLoginapp_resetpassword();
 end
 
 KBEngineLua.Client_onReqAccountResetPasswordCB = function(failcode)
 	if(failcode ~= 0) then
-		log("KBEngine::Client_onReqAccountResetPasswordCB: " .. this.username .. " is failed! code=" .. failcode .. "!");
+		logInfo("KBEngine::Client_onReqAccountResetPasswordCB: " .. this.username .. " is failed! code=" .. failcode .. "!");
 		return;
 	end
-	log("KBEngine::Client_onReqAccountResetPasswordCB: " .. this.username .. " is successfully!");
+	logInfo("KBEngine::Client_onReqAccountResetPasswordCB: " .. this.username .. " is successfully!");
 end
 
 	--绑定Email，通过baseapp
@@ -1804,11 +1803,11 @@ end
 
 KBEngineLua.Client_onReqAccountBindEmailCB = function(failcode)
 	if(failcode ~= 0) then
-		log("KBEngine::Client_onReqAccountBindEmailCB: " .. this.username .. " is failed! code=" .. failcode .. "!");
+		logInfo("KBEngine::Client_onReqAccountBindEmailCB: " .. this.username .. " is failed! code=" .. failcode .. "!");
 		return;
 	end
 
-	log("KBEngine::Client_onReqAccountBindEmailCB: " .. this.username .. " is successfully!");
+	logInfo("KBEngine::Client_onReqAccountBindEmailCB: " .. this.username .. " is successfully!");
 end
 
 ----设置新密码，通过baseapp， 必须玩家登录在线操作所以是baseapp。
@@ -1824,11 +1823,11 @@ end
 
 KBEngineLua.Client_onReqAccountNewPasswordCB = function(failcode)
 	if(failcode ~= 0) then
-		log("KBEngine::Client_onReqAccountNewPasswordCB: " .. this.username .. " is failed! code=" .. failcode .. "!");
+		logInfo("KBEngine::Client_onReqAccountNewPasswordCB: " .. this.username .. " is failed! code=" .. failcode .. "!");
 		return;
 	end
 
-	log("KBEngine::Client_onReqAccountNewPasswordCB: " .. this.username .. " is successfully!");
+	logInfo("KBEngine::Client_onReqAccountNewPasswordCB: " .. this.username .. " is successfully!");
 end
 
 KBEngineLua.createAccount = function(username, password, data)
@@ -1857,7 +1856,7 @@ KBEngineLua.createAccount_loginapp = function(noconnect)
 end
 
 KBEngineLua.onOpenLoginapp_createAccount = function()
-	log("KBEngine::onOpenLoginapp_createAccount: successfully!");
+	logInfo("KBEngine::onOpenLoginapp_createAccount: successfully!");
 	this.currserver = "loginapp";
 	this.currstate = "createAccount";
 	this._lastTickCBTime = os.clock();
@@ -1866,7 +1865,7 @@ KBEngineLua.onOpenLoginapp_createAccount = function()
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Loginapp_importClientMessages"]);
 		bundle:send();
-		log("KBEngine::onOpenLoginapp_createAccount: send importClientMessages ...");
+		logInfo("KBEngine::onOpenLoginapp_createAccount: send importClientMessages ...");
 	else
 		this.onImportClientMessagesCompleted();
 	end
@@ -1876,11 +1875,11 @@ KBEngineLua.onConnectTo_createAccount_callback = function(ip, port, success, use
 	this._lastTickCBTime = os.clock();
 
 	if( not success) then
-		log("KBEngine::createAccount_loginapp(): connect "..ip..":"..port.." is error!");
+		logInfo("KBEngine::createAccount_loginapp(): connect "..ip..":"..port.." is error!");
 		return;
 	end
 	
-	log("KBEngine::createAccount_loginapp(): connect "..ip..":"..port.." is success!"); 
+	logInfo("KBEngine::createAccount_loginapp(): connect "..ip..":"..port.." is success!"); 
 	this.onOpenLoginapp_createAccount();
 end
 
@@ -1890,7 +1889,7 @@ end
 KBEngineLua.Client_onVersionNotMatch = function(stream)
 	this.serverVersion = stream:readString();
 	
-	log("Client_onVersionNotMatch: verInfo=" .. this.clientVersion .. "(server: " .. this.serverVersion .. ")");
+	logInfo("Client_onVersionNotMatch: verInfo=" .. this.clientVersion .. "(server: " .. this.serverVersion .. ")");
 	--Event.fireAll("onVersionNotMatch", new object[]{clientVersion, serverVersion});
 	
 	if(this._persistentInfos ~= nil) then
@@ -1903,7 +1902,7 @@ end
 KBEngineLua.Client_onScriptVersionNotMatch = function(stream)
 	this.serverScriptVersion = stream:readString();
 	
-	log("Client_onScriptVersionNotMatch: verInfo=" .. this.clientScriptVersion .. "(server: " .. this.serverScriptVersion .. ")");
+	logInfo("Client_onScriptVersionNotMatch: verInfo=" .. this.clientScriptVersion .. "(server: " .. this.serverScriptVersion .. ")");
 	--Event.fireAll("onScriptVersionNotMatch", new object[]{clientScriptVersion, this.serverScriptVersion});
 	
 	if(_persistentInfos ~= nil) then
@@ -1914,7 +1913,7 @@ end
 --	被服务端踢出
 
 KBEngineLua.Client_onKicked = function(failedcode)
-	log("Client_onKicked: failedcode=" .. failedcode);
+	logInfo("Client_onKicked: failedcode=" .. failedcode);
 	--Event.fireAll("onKicked", new object[]{failedcodeend);
 end
 
@@ -1929,11 +1928,11 @@ end
 KBEngineLua.onReConnectTo_baseapp_callback = function(ip, port, success, userData)
 
 	if not success then
-		log("KBEngine::reLoginBaseapp(): connect "..ip..":"..port.." is error!");
+		logInfo("KBEngine::reLoginBaseapp(): connect "..ip..":"..port.." is error!");
 		return;
 	end
 	
-	log("KBEngine::relogin_baseapp(): connect "..ip..":"..port.." is successfully!");
+	logInfo("KBEngine::relogin_baseapp(): connect "..ip..":"..port.." is successfully!");
 
 	local bundle = KBEngineLua.Bundle:New();
 	bundle:newMessage(KBEngineLua.messages["Baseapp_reLoginBaseapp"]);
@@ -1948,20 +1947,20 @@ end
 
 	--登录baseapp失败了
 KBEngineLua.Client_onLoginBaseappFailed = function(failedcode)
-	log("KBEngine::Client_onLoginBaseappFailed: failedcode(" .. failedcode .. ")!");
+	logInfo("KBEngine::Client_onLoginBaseappFailed: failedcode(" .. failedcode .. ")!");
 	--Event.fireAll("onLoginBaseappFailed", new object[]{failedcode});
 end
 
 	--重登录baseapp失败了
 KBEngineLua.Client_onReloginBaseappFailed = function(failedcode)
-	log("KBEngine::Client_onReloginBaseappFailed: failedcode(" .. failedcode .. ")!");
+	logInfo("KBEngine::Client_onReloginBaseappFailed: failedcode(" .. failedcode .. ")!");
 	--Event.fireAll("onReloginBaseappFailed", new object[]{failedcodeend);
 end
 
 	--登录baseapp成功了
 KBEngineLua.Client_onReloginBaseappSuccessfully = function(stream)
 	this.entity_uuid = stream:readUint64();
-	log("KBEngine::Client_onReloginBaseappSuccessfully: name(" .. this.username .. ")!");
+	logInfo("KBEngine::Client_onReloginBaseappSuccessfully: name(" .. this.username .. ")!");
 	--Event.fireAll("onReloginBaseappSuccessfully", new object[]{end);
 end
 
@@ -1986,7 +1985,7 @@ KBEngineLua.sendTick = function()
 		-- 如果心跳回调接收时间小于心跳发送时间，说明没有收到回调
 		-- 此时应该通知客户端掉线了
 		if(span < 0) then
-			log("sendTick: Receive appTick timeout!");
+			logInfo("sendTick: Receive appTick timeout!");
 			this._networkInterface:close();
 			return;
 		end
