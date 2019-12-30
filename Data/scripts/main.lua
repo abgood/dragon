@@ -42,6 +42,8 @@ end
 
 function SubscribeToEvents()
     SubscribeToEvent("Update", "HandleUpdate")
+
+    SubscribeToEvent("NetworkMessage", "HandleNetworkMessage")
     SubscribeToEvent("ServerConnected", "HandleConnectionStatus")
 end
 

@@ -127,6 +127,10 @@ function HandleConnectionStatus(eventType, eventData)
 	this.onConnectTo_loginapp_callback(this.ip, this.port, 1, nil);
 end
 
+function HandleNetworkMessage(eventType, eventData)
+	print ("lj net msg");
+end
+
 KBEngineLua.Destroy = function()
 	logInfo("KBEngine::destroy()");  	
 	this.reset();
