@@ -50,7 +50,8 @@ function KBEngineLua.Bundle:writeMsgLength()
 		stream = self.streamList[idx];
 	end
 
-	num = self:twoByteEndian(self.messageLength);
+	-- num = self:twoByteEndian(self.messageLength);
+	num = self.messageLength;
 	stream:WriteUShort(num);
 end
 
@@ -108,19 +109,19 @@ end
 
 function KBEngineLua.Bundle:writeInt16(v)
 	self:checkStream(2);
-	v = self:twoByteEndian(v);
+	-- v = self:twoByteEndian(v);
 	self.stream:WriteShort(v);
 end
 	
 function KBEngineLua.Bundle:writeInt32(v)
 	self:checkStream(4);
-	v = self:fourByteEndian(v);
+	-- v = self:fourByteEndian(v);
 	self.stream:WriteInt(v);
 end
 
 function KBEngineLua.Bundle:writeInt64(v)
 	self:checkStream(8);
-	v = self:eightByteEndian(v);
+	-- v = self:eightByteEndian(v);
 	self.stream:WriteInt64(v);
 end
 
@@ -131,19 +132,19 @@ end
 
 function KBEngineLua.Bundle:writeUint16(v)
 	self:checkStream(2);
-	v = self:twoByteEndian(v);
+	-- v = self:twoByteEndian(v);
 	self.stream:WriteUShort(v);
 end
 	
 function KBEngineLua.Bundle:writeUint32(v)
 	self:checkStream(4);
-	v = self:fourByteEndian(v);
+	-- v = self:fourByteEndian(v);
 	self.stream:WriteUint(v);
 end
 
 function KBEngineLua.Bundle:writeUint64(v)
 	self:checkStream(8);
-	v = self:eightByteEndian(v);
+	-- v = self:eightByteEndian(v);
 	self.stream:WriteUint64(v);
 end
 
@@ -154,7 +155,7 @@ end
 
 function KBEngineLua.Bundle:writeDouble(v)
 	self:checkStream(8);
-	v = self:eightByteEndian(v);
+	-- v = self:eightByteEndian(v);
 	self.stream:WriteDouble(v);
 end
 
