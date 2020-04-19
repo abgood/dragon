@@ -50,7 +50,6 @@ function KBEngineLua.Bundle:writeMsgLength()
 		stream = self.streamList[idx];
 	end
 
-	-- num = self:twoByteEndian(self.messageLength);
 	num = self.messageLength;
 	stream:WriteUShort(num);
 end
@@ -109,43 +108,37 @@ end
 
 function KBEngineLua.Bundle:writeInt16(v)
 	self:checkStream(2);
-	-- v = self:twoByteEndian(v);
 	self.stream:WriteShort(v);
 end
 	
 function KBEngineLua.Bundle:writeInt32(v)
 	self:checkStream(4);
-	-- v = self:fourByteEndian(v);
 	self.stream:WriteInt(v);
 end
 
 function KBEngineLua.Bundle:writeInt64(v)
 	self:checkStream(8);
-	-- v = self:eightByteEndian(v);
 	self.stream:WriteInt64(v);
 end
 
 function KBEngineLua.Bundle:writeUint8(v)
 	self:checkStream(1);
-	self.stream:WriteUint8(v);
+	self.stream:WriteUByte(v);
 end
 
 function KBEngineLua.Bundle:writeUint16(v)
 	self:checkStream(2);
-	-- v = self:twoByteEndian(v);
 	self.stream:WriteUShort(v);
 end
 	
 function KBEngineLua.Bundle:writeUint32(v)
 	self:checkStream(4);
-	-- v = self:fourByteEndian(v);
-	self.stream:WriteUint(v);
+	self.stream:WriteUInt(v);
 end
 
 function KBEngineLua.Bundle:writeUint64(v)
 	self:checkStream(8);
-	-- v = self:eightByteEndian(v);
-	self.stream:WriteUint64(v);
+	self.stream:WriteUInt64(v);
 end
 
 function KBEngineLua.Bundle:writeFloat(v)
@@ -155,7 +148,6 @@ end
 
 function KBEngineLua.Bundle:writeDouble(v)
 	self:checkStream(8);
-	-- v = self:eightByteEndian(v);
 	self.stream:WriteDouble(v);
 end
 
@@ -165,43 +157,9 @@ function KBEngineLua.Bundle:writeString(v)
 end
 
 function KBEngineLua.Bundle:writeBlob(v)
+	self:writeUint32(#v);
 	if #v > 0 then
-		self:checkStream(v.Length + 4);
-		self.stream:WriteBuffer(v);
+		self:checkStream(#v);
+		-- self.stream:WriteBuffer(v);
 	end
-end
-
-function KBEngineLua.Bundle:twoByteEndian(v)
-	v1 = bit.band(bit.lshift(v, 8), 0xff00);
-	v2 = bit.band(bit.rshift(v, 8), 0x00ff);
-	n = bit.bor(v1, v2);
-	return n;
-end
-
-function KBEngineLua.Bundle:fourByteEndian(v)
-	v1 = bit.band(bit.rshift(v, 16), 0xffff);
-	v2 = bit.band(v, 0xffff);
-
-	v3 = self:twoByteEndian(v1);
-	v4 = self:twoByteEndian(v2);
-
-	v5 = bit.band(v3, 0xffff0000);
-	v6 = bit.band(v4, 0x0000ffff);
-
-	n = bit.bor(v1, v2);
-	return n;
-end
-
-function KBEngineLua.Bundle:eightByteEndian(v)
-	v1 = bit.band(bit.rshift(v, 32), 0xffffffff);
-	v2 = bit.band(v, 0xffffffff);
-
-	v3 = self:fourByteEndian(v1);
-	v4 = self:fourByteEndian(v2);
-
-	v5 = bit.band(v3, 0xffffffff00000000);
-	v6 = bit.band(v4, 0x00000000ffffffff);
-
-	n = bit.bor(v1, v2);
-	return n;
 end

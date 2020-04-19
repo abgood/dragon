@@ -14,7 +14,7 @@ require "scripts/libs/Base"
 
 
 -----------------可配置信息---------------
-KBEngineLua.ip = "192.168.56.101";
+KBEngineLua.ip = "192.168.8.123";
 KBEngineLua.port = "20013";
 -- Mobile(Phone, Pad)	= 1,
 -- Windows Application program	= 2,
@@ -129,6 +129,12 @@ end
 
 function HandleNetworkMessage(eventType, eventData)
 	print ("lj net msg");
+    local msg = eventData["Data"]:GetBuffer()
+    local v1 = msg:ReadUShort()
+    local v2 = msg:ReadUShort()
+    local v3 = msg:ReadString()
+    local v4 = msg:ReadString()
+	print ("lj msg", v1, v2, v3, v4);
 end
 
 KBEngineLua.Destroy = function()
