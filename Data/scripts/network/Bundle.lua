@@ -28,21 +28,11 @@ function KBEngineLua.Bundle:newMessage(mt)
 
 	self:writeUint16(self.msgtype.id);
 
-	if(self.msgtype.msglen ~= -1) then
-		self:writeUint16(0);
-		self.messageLength = 0;
-	end
-	
 	self._curMsgStreamIndex = 0;
 end
 
 ---------------------------------------------------------------------------------
 function KBEngineLua.Bundle:writeMsgLength()
-
-	if(self.msgtype.msglen ~= -1) then
-		return;
-	end
-
 	local stream = self.stream;
 	if(self._curMsgStreamIndex > 0) then
 		idx = #self.streamList - self._curMsgStreamIndex;

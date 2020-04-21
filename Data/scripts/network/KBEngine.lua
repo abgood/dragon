@@ -14,7 +14,7 @@ require "scripts/libs/Base"
 
 
 -----------------可配置信息---------------
-KBEngineLua.ip = "192.168.8.123";
+KBEngineLua.ip = "192.168.56.101";
 KBEngineLua.port = "20013";
 -- Mobile(Phone, Pad)	= 1,
 -- Windows Application program	= 2,
@@ -124,7 +124,7 @@ KBEngineLua.init = function()
 end
 
 function HandleConnectionStatus(eventType, eventData)
-	this.onConnectTo_loginapp_callback(this.ip, this.port, 1, nil);
+	this.onLogin_loginapp();
 end
 
 function HandleNetworkMessage(eventType, eventData)
