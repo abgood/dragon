@@ -93,7 +93,7 @@ end
 ---------------------------------------------------------------------------------
 function KBEngineLua.Bundle:writeInt8(v)
 	self:checkStream(1);
-	self.stream:WriteInt8(v);
+	self.stream:WriteByte(v);
 end
 
 function KBEngineLua.Bundle:writeInt16(v)
@@ -150,6 +150,7 @@ function KBEngineLua.Bundle:writeBlob(v)
 	self:writeUint32(#v);
 	if #v > 0 then
 		self:checkStream(#v);
+		print ("lj test");
 		-- self.stream:WriteBuffer(v);
 	end
 end

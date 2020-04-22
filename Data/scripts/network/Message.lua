@@ -122,18 +122,19 @@ KBEngineLua.MessageReader = {
 local reader = KBEngineLua.MessageReader;
 
 
-function KBEngineLua.MessageReader.process(datas, offset, length)
-	local totallen = offset;
+function KBEngineLua.MessageReader.process(packet)
+	length = packet.size;
+	print ("lj pro", length, packet.position);
+
 	while(length > 0 and reader.expectSize > 0)
 	do
 		if(reader.state == KBEngineLua.READ_STATE_MSGID) then
 			if(length >= reader.expectSize) then
-				KBELuaUtil.ArrayCopy(datas, totallen, reader.stream:data(), reader.stream.wpos, reader.expectSize);
-				totallen = totallen + reader.expectSize;
-				reader.stream.wpos = reader.stream.wpos + reader.expectSize;
+				 reader.stream:SetData(packet, reader.expectSize);
 				length = length - reader.expectSize;
-				reader.msgid = reader.stream:readUint16();
-				reader.stream:clear();
+
+				reader.msgid = reader.stream:ReadUShort();
+				reader.stream:Clear();
 				
 				local msg = KBEngineLua.clientMessages[reader.msgid];
 
@@ -150,20 +151,16 @@ function KBEngineLua.MessageReader.process(datas, offset, length)
 					reader.state = KBEngineLua.READ_STATE_BODY;
 				end
 			else
-				KBELuaUtil.ArrayCopy(datas, totallen, reader.stream:data(), reader.stream.wpos, length);
-				reader.stream.wpos = reader.stream.wpos + length;
-				reader.expectSize = reader.expectSize - length;
+				logError("KBEngineLua.MessageReader.process: READ_STATE_MSGID, length: " .. length .. " expectSize: " .. reader.expectSize);
 				break;
 			end
 		elseif(reader.state == KBEngineLua.READ_STATE_MSGLEN) then
 			if(length >= reader.expectSize) then
-				KBELuaUtil.ArrayCopy(datas, totallen, reader.stream:data(), reader.stream.wpos, reader.expectSize);
-				totallen = totallen + reader.expectSize;
-				reader.stream.wpos = reader.stream.wpos + reader.expectSize;
+				reader.stream:SetData(packet, reader.expectSize);
 				length = length - reader.expectSize;
 				
-				reader.msglen = reader.stream:readUint16();
-				reader.stream:clear();
+				reader.msglen = reader.stream:ReadUShort();
+				reader.stream:Clear();
 				
 				-- 长度扩展
 				if(reader.msglen >= 65535) then
@@ -174,45 +171,38 @@ function KBEngineLua.MessageReader.process(datas, offset, length)
 					reader.expectSize = reader.msglen;
 				end
 			else
-				KBELuaUtil.ArrayCopy(datas, totallen, reader.stream:data(), reader.stream.wpos, length);
-				reader.stream.wpos = reader.stream.wpos + length;
-				reader.expectSize = reader.expectSize - length;
+				logError("KBEngineLua.MessageReader.process: READ_STATE_MSGLEN, length: " .. length .. " expectSize: " .. reader.expectSize);
 				break;
 			end
 		elseif(reader.state == KBEngineLua.READ_STATE_MSGLEN_EX) then
 			if(length >= reader.expectSize) then
-				KBELuaUtil.ArrayCopy(datas, totallen, reader.stream:data(), reader.stream.wpos, reader.expectSize);
-				totallen = totallen + reader.expectSize;
-				reader.stream.wpos = reader.stream.wpos + reader.expectSize;
+				reader.stream:SetData(packet, reader.expectSize);
+
 				length = length - reader.expectSize;
 				
 				reader.expectSize = reader.stream:readUint32();
-				reader.stream:clear();
+				reader.stream:Clear();
 				
 				reader.state = KBEngineLua.READ_STATE_BODY;
 			else
-				KBELuaUtil.ArrayCopy(datas, totallen, reader.stream:data(), reader.stream.wpos, length);
-				reader.stream.wpos = reader.stream.wpos + length;
-				reader.expectSize = reader.expectSize - length;
+				logError("KBEngineLua.MessageReader.process: READ_STATE_MSGLEN_EX, length: " .. length .. " expectSize: " .. reader.expectSize);
 				break;
 			end
 		elseif(reader.state == KBEngineLua.READ_STATE_BODY) then
 			if(length >= reader.expectSize) then
-				reader.stream:append(datas, totallen, reader.expectSize);
-				totallen = totallen + reader.expectSize;
+				reader.stream:SetData(packet, reader.expectSize);
 				length = length - reader.expectSize;
 
 				local msg = KBEngineLua.clientMessages[reader.msgid];
 
 				msg:handleMessage(reader.stream);
 
-				reader.stream:clear();
+				reader.stream:Clear();
 				
 				reader.state = KBEngineLua.READ_STATE_MSGID;
 				reader.expectSize = 2;
 			else
-				reader.stream:append (datas, totallen, length);
-				reader.expectSize = reader.expectSize - length;
+				logError("KBEngineLua.MessageReader.process: READ_STATE_BODY, length: " .. length .. " expectSize: " .. reader.expectSize);
 				break;
 			end
 		end

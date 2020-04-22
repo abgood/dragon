@@ -100,8 +100,15 @@ KBEngineLua._lastTickTime = os.clock();
 KBEngineLua._lastTickCBTime = os.clock();
 KBEngineLua._lastUpdateToServerTime = os.clock();
 
---网络接口
+-- 网络接口
 KBEngineLua._networkInterface = nil;
+
+-- 单次网络数据包
+KBEngineLua.networkPacket = VectorBuffer();
+-- 单次网络数据包总长度
+KBEngineLua.networkDataLength = 0;
+-- 单个网络数据包长度
+KBEngineLua.networkMsgLen = 0;
 
 
 KBEngineLua.GetArgs = function()
@@ -128,13 +135,27 @@ function HandleConnectionStatus(eventType, eventData)
 end
 
 function HandleNetworkMessage(eventType, eventData)
-	print ("lj net msg");
     local msg = eventData["Data"]:GetBuffer()
-    local v1 = msg:ReadUShort()
-    local v2 = msg:ReadUShort()
-    local v3 = msg:ReadString()
-    local v4 = msg:ReadString()
-	print ("lj msg", v1, v2, v3, v4);
+    local msgid = msg:ReadUShort();
+
+	if this.networkDataLength <= 0 then
+		msglen = msg:ReadUShort();
+		this.networkDataLength = msglen + msg.position;
+		this.networkPacket:Clear();
+	end
+
+	msg:Seek(0);
+	this.networkMsgLen = this.networkMsgLen + msg.size;
+	this.networkPacket:Write(msg, msg.size);
+	msg:Clear();
+
+	if this.networkMsgLen >= this.networkDataLength then
+		this.networkDataLength = 0;
+		this.networkMsgLen = 0;
+		this.networkPacket:Seek(0);
+
+		KBEngineLua.MessageReader.process(this.networkPacket);
+	end
 end
 
 KBEngineLua.Destroy = function()
@@ -201,7 +222,7 @@ KBEngineLua.importMessagesFromMemoryStream = function(loginapp_clientMessages, b
 end
 
 KBEngineLua.createDataTypeFromStreams = function(stream, canprint)
-	local aliassize = stream:readUint16();
+	local aliassize = stream:ReadUShort();
 	logInfo("KBEngineApp::createDataTypeFromStreams: importAlias(size=" .. aliassize .. ")!");
 	
 	while(aliassize > 0)
@@ -217,9 +238,9 @@ KBEngineLua.createDataTypeFromStreams = function(stream, canprint)
 	end
 end
 KBEngineLua.createDataTypeFromStream = function(stream, canprint)
-	local utype = stream:readUint16();
-	local name = stream:readString();
-	local valname = stream:readString();
+	local utype = stream:ReadUShort();
+	local name = stream:ReadString();
+	local valname = stream:ReadString();
 	
 	-- 有一些匿名类型，我们需要提供一个唯一名称放到datatypes中
 	-- 如：
@@ -237,21 +258,21 @@ KBEngineLua.createDataTypeFromStream = function(stream, canprint)
 	
 	if(name == "FIXED_DICT") then
 		local datatype = KBEngineLua.DATATYPE_FIXED_DICT:New();
-		local keysize = stream:readUint8();
-		datatype.implementedBy = stream:readString();
+		local keysize = stream:ReadUByte();
+		datatype.implementedBy = stream:ReadString();
 			
 		while(keysize > 0)
         do
 			keysize = keysize -1;
-			local keyname = stream:readString();
-			local keyutype = stream:readUint16();
+			local keyname = stream:ReadString();
+			local keyutype = stream:ReadUShort();
 			table.insert(datatype.dictKeys, keyname);
 			datatype.dicttype[keyname] = keyutype;
 		end
 		
 		KBEngineLua.datatypes[valname] = datatype;
 	elseif(name == "ARRAY") then
-		local uitemtype = stream:readUint16();
+		local uitemtype = stream:ReadUShort();
 		local datatype = KBEngineLua.DATATYPE_ARRAY:New();
 		datatype._type = uitemtype;
 		KBEngineLua.datatypes[valname] = datatype;
@@ -266,7 +287,7 @@ KBEngineLua.createDataTypeFromStream = function(stream, canprint)
 end
 
 KBEngineLua.Client_onImportClientEntityDef = function(stream)
-	local datas = stream:getbuffer();
+	local datas = stream:GetBuffer();
 	this.onImportClientEntityDef(stream);
 	if(this._persistentInfos ~= nil) then
 		this._persistentInfos:onImportClientEntityDef(datas);
@@ -278,12 +299,12 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 
 	while(stream:length() > 0)
 	do
-		local scriptmodule_name = stream:readString();
-		local scriptUtype = stream:readUint16();
-		local propertysize = stream:readUint16();
-		local methodsize = stream:readUint16();
-		local base_methodsize = stream:readUint16();
-		local cell_methodsize = stream:readUint16();
+		local scriptmodule_name = stream:ReadString();
+		local scriptUtype = stream:ReadUShort();
+		local propertysize = stream:ReadUShort();
+		local methodsize = stream:ReadUShort();
+		local base_methodsize = stream:ReadUShort();
+		local cell_methodsize = stream:ReadUShort();
 		
 		logInfo("KBEngineApp::Client_onImportClientEntityDef: import(" .. scriptmodule_name .. "), propertys(" .. propertysize .. "), " ..
 				"clientMethods(" .. methodsize .. "), baseMethods(" .. base_methodsize .. "), cellMethods(" .. cell_methodsize .. ")~");
@@ -308,12 +329,12 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 		do
 			propertysize = propertysize - 1;
 			
-			local properUtype = stream:readUint16();
+			local properUtype = stream:ReadUShort();
 			local properFlags = stream:readUint32();
-			local aliasID = stream:readInt16();
-			local name = stream:readString();
-			local defaultValStr = stream:readString();
-			local utype = KBEngineLua.datatypes[stream:readUint16()];
+			local aliasID = stream:ReadShort();
+			local name = stream:ReadString();
+			local defaultValStr = stream:ReadString();
+			local utype = KBEngineLua.datatypes[stream:ReadUShort()];
 			local setmethod = nil;--函数
 			if(Class ~= nil) then
 				setmethod = Class["set_" .. name];
@@ -336,16 +357,16 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 		do
 			methodsize = methodsize - 1;
 			
-			local methodUtype = stream:readUint16();
-			local aliasID = stream:readInt16();
-			local name = stream:readString();
-			local argssize = stream:readUint8();
+			local methodUtype = stream:ReadUShort();
+			local aliasID = stream:ReadShort();
+			local name = stream:ReadString();
+			local argssize = stream:ReadUByte();
 			local args = {};
 			
 			while(argssize > 0)
 			do
 				argssize = argssize - 1;
-				table.insert(args,KBEngineLua.datatypes[stream:readUint16()]);
+				table.insert(args,KBEngineLua.datatypes[stream:ReadUShort()]);
 			end
 			
 			local savedata = {methodUtype, aliasID, name, args};
@@ -366,16 +387,16 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 		do
 			base_methodsize = base_methodsize - 1;
 			
-			local methodUtype = stream:readUint16();
-			local aliasID = stream:readInt16();
-			local name = stream:readString();
-			local argssize = stream:readUint8();
+			local methodUtype = stream:ReadUShort();
+			local aliasID = stream:ReadShort();
+			local name = stream:ReadString();
+			local argssize = stream:ReadUByte();
 			local args = {};
 			
 			while(argssize > 0)
             do
 				argssize = argssize - 1;
-				table.insert(args,KBEngineLua.datatypes[stream:readUint16()]);
+				table.insert(args,KBEngineLua.datatypes[stream:ReadUShort()]);
 			end
 			
 			self_base_methods[name] = {methodUtype, aliasID, name, args};
@@ -386,16 +407,16 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 		do
 			cell_methodsize = cell_methodsize - 1;
 			
-			local methodUtype = stream:readUint16();
-			local aliasID = stream:readInt16();
-			local name = stream:readString();
-			local argssize = stream:readUint8();
+			local methodUtype = stream:ReadUShort();
+			local aliasID = stream:ReadShort();
+			local name = stream:ReadString();
+			local argssize = stream:ReadUByte();
 			local args = {};
 			
 			while(argssize > 0)
 			do
 				argssize = argssize -1;
-				table.insert(args,KBEngineLua.datatypes[stream:readUint16()]);
+				table.insert(args,KBEngineLua.datatypes[stream:ReadUShort()]);
 			end
 			
 			self_cell_methods[name] = {methodUtype, aliasID, name, args};
@@ -436,16 +457,16 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 end
 
 KBEngineLua.Client_onImportClientMessages = function( stream )
-	local datas = stream:getbuffer();
 	this.onImportClientMessages (stream);
 	
-	if(this._persistentInfos ~= nil) then
-		this._persistentInfos:onImportClientMessages(this.currserver, datas);
-	end
+	print ("lj test");
+	-- if(this._persistentInfos ~= nil) then
+	-- 	this._persistentInfos:onImportClientMessages(this.currserver, stream);
+	-- end
 end
 
 KBEngineLua.onImportClientMessages = function( stream )
-	local msgcount = stream:readUint16();
+	local msgcount = stream:ReadUShort();
 	
 	logInfo("KBEngineApp::onImportClientMessages: start(" .. msgcount .. ") ...!");
 	
@@ -453,16 +474,16 @@ KBEngineLua.onImportClientMessages = function( stream )
 	do
 		msgcount = msgcount - 1;
 		
-		local msgid = stream:readUint16();
-		local msglen = stream:readInt16();
+		local msgid = stream:ReadUShort();
+		local msglen = stream:ReadShort();
 
-		local msgname = stream:readString();
-		local argtype = stream:readInt8();
-		local argsize = stream:readUint8();
+		local msgname = stream:ReadString();
+		local argtype = stream:ReadByte();
+		local argsize = stream:ReadUByte();
 		local argstypes = {};
 		
 		for i = 1, argsize, 1 do
-			table.insert(argstypes, stream:readUint8());
+			table.insert(argstypes, stream:ReadUByte());
 		end
 		
 		local handler = nil;
@@ -493,7 +514,7 @@ KBEngineLua.onImportClientMessages = function( stream )
 end
 
 KBEngineLua.Client_onImportServerErrorsDescr = function(stream)
-	local datas = stream:getbuffer();
+	local datas = stream:GetBuffer();
 	this.onImportServerErrorsDescr(stream);
 	
 	if(this._persistentInfos ~= nil) then
@@ -502,13 +523,13 @@ KBEngineLua.Client_onImportServerErrorsDescr = function(stream)
 end
 
 KBEngineLua.onImportServerErrorsDescr = function(stream)
-	local size = stream:readUint16();
+	local size = stream:ReadUShort();
 	while size > 0
 	do
 		size = size - 1;
 		
 		local e = {};
-		e.id = stream:readUint16();
+		e.id = stream:ReadUShort();
 		e.name = KBELuaUtil.ByteToUtf8(stream:readBlob());
 		e.descr = KBELuaUtil.ByteToUtf8(stream:readBlob());
 		
@@ -520,6 +541,7 @@ end
 KBEngineLua.onImportClientMessagesCompleted = function()
 	logInfo("KBEngine::onImportClientMessagesCompleted: successfully! currserver=" .. 
 		this.currserver .. ", currstate=" .. this.currstate);
+	this.hello();
 
 	if(this.currserver == "loginapp") then
 		if(not this.isImportServerErrorsDescr_ and not this.loadingLocalMessages_) then
@@ -620,7 +642,7 @@ KBEngineLua.getAoiEntityIDFromStream = function(stream)
 	if(#KBEngineLua.entityIDAliasIDList > 255)then
 		id = stream:readInt32();
 	else
-		local aliasID = stream:readUint8();
+		local aliasID = stream:ReadUByte();
 
 		-- -- 如果为0且客户端上一步是重登陆或者重连操作并且服务端entity在断线期间一直处于在线状态
 		-- -- 则可以忽略这个错误, 因为cellapp可能一直在向baseapp发送同步消息， 当客户端重连上时未等
@@ -659,9 +681,9 @@ KBEngineLua.onUpdatePropertys_ = function(eid, stream)
 	while(stream:length() > 0) do
 		local utype = 0;
 		if(currModule.usePropertyDescrAlias) then
-			utype = stream:readUint8();
+			utype = stream:ReadUByte();
 		else
-			utype = stream:readUint16();
+			utype = stream:ReadUShort();
         end
 
 		local propertydata = pdatas[utype];
@@ -709,9 +731,9 @@ KBEngineLua.onRemoteMethodCall_ = function(eid, stream)
 	
 	local methodUtype = 0;
 	if(KBEngineLua.moduledefs[entity.className].useMethodDescrAlias) then
-		methodUtype = stream:readUint8();
+		methodUtype = stream:ReadUByte();
 	else
-		methodUtype = stream:readUint16();
+		methodUtype = stream:ReadUShort();
 	end
 	
 	local methoddata = KBEngineLua.moduledefs[entity.className].methods[methodUtype];
@@ -746,15 +768,15 @@ KBEngineLua.Client_onEntityEnterWorld = function(stream)
 	
 	local entityType;
 	if(#KBEngineLua.moduledefs > 255) then
-		entityType = stream:readUint16();
+		entityType = stream:ReadUShort();
 	else
-		entityType = stream:readUint8();
+		entityType = stream:ReadUByte();
 	end
 	
 	local isOnGround = 1;
 	
 	if(stream:length() > 0) then
-		isOnGround = stream:readInt8();
+		isOnGround = stream:ReadByte();
 	end
 	
 	entityType = KBEngineLua.moduledefs[entityType].name;
@@ -893,7 +915,7 @@ KBEngineLua.Client_onEntityEnterSpace = function(stream)
 	local isOnGround = true;
 	
 	if(stream:length() > 0) then
-		isOnGround = stream:readInt8();
+		isOnGround = stream:ReadByte();
 	end
 	
 	local entity = KBEngineLua.entities[eid];
@@ -923,7 +945,7 @@ end
 --账号创建返回结果
 KBEngineLua.Client_onCreateAccountResult = function(stream)
 
-	local retcode = stream:readUint16();
+	local retcode = stream:ReadUShort();
 	local datas = stream:readBlob();
 	
 	Event.Brocast("onCreateAccountResult", retcode, datas);
@@ -1110,8 +1132,8 @@ KBEngineLua.Client_initSpaceData = function(stream)
 	
 	KBEngineLua.spaceID = stream:readInt32();
 	while(stream:length() > 0) do
-		local key = stream:readString();
-		local value = stream:readString();
+		local key = stream:ReadString();
+		local value = stream:ReadString();
 		KBEngineLua.Client_setSpaceData(KBEngineLua.spaceID, key, value);
 	end
 	
@@ -1230,9 +1252,9 @@ KBEngineLua.Client_onUpdateData_ypr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local y = stream:readInt8();
-	local p = stream:readInt8();
-	local r = stream:readInt8();
+	local y = stream:ReadByte();
+	local p = stream:ReadByte();
+	local r = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, y, p, r, -1);
 end
@@ -1241,8 +1263,8 @@ KBEngineLua.Client_onUpdateData_yp = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local y = stream:readInt8();
-	local p = stream:readInt8();
+	local y = stream:ReadByte();
+	local p = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, y, p, KBEngineLua.KBE_FLT_MAX, -1);
 end
@@ -1251,8 +1273,8 @@ KBEngineLua.Client_onUpdateData_yr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local y = stream:readInt8();
-	local r = stream:readInt8();
+	local y = stream:ReadByte();
+	local r = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, y, KBEngineLua.KBE_FLT_MAX, r, -1);
 end
@@ -1261,8 +1283,8 @@ KBEngineLua.Client_onUpdateData_pr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local p = stream:readInt8();
-	local r = stream:readInt8();
+	local p = stream:ReadByte();
+	local r = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, p, r, -1);
 end
@@ -1271,7 +1293,7 @@ KBEngineLua.Client_onUpdateData_y = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local y = stream:readInt8();
+	local y = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, -1);
 end
@@ -1280,7 +1302,7 @@ KBEngineLua.Client_onUpdateData_p = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local p = stream:readInt8();
+	local p = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, p, KBEngineLua.KBE_FLT_MAX, -1);
 end
@@ -1289,7 +1311,7 @@ KBEngineLua.Client_onUpdateData_r = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local r = stream:readInt8();
+	local r = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, r, -1);
 end
@@ -1309,9 +1331,9 @@ KBEngineLua.Client_onUpdateData_xz_ypr = function(stream)
 	
 	local xz = stream:readPackXZ();
 
-	local y = stream:readInt8();
-	local p = stream:readInt8();
-	local r = stream:readInt8();
+	local y = stream:ReadByte();
+	local p = stream:ReadByte();
+	local r = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, y, p, r, 1);
 end
@@ -1322,8 +1344,8 @@ KBEngineLua.Client_onUpdateData_xz_yp = function(stream)
 	
 	local xz = stream:readPackXZ();
 
-	local y = stream:readInt8();
-	local p = stream:readInt8();
+	local y = stream:ReadByte();
+	local p = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, y, p, KBEngineLua.KBE_FLT_MAX, 1);
 end
@@ -1334,8 +1356,8 @@ KBEngineLua.Client_onUpdateData_xz_yr = function(stream)
 	
 	local xz = stream:readPackXZ();
 
-	local y = stream:readInt8();
-	local r = stream:readInt8();
+	local y = stream:ReadByte();
+	local r = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, y, KBEngineLua.KBE_FLT_MAX, r, 1);
 end
@@ -1346,8 +1368,8 @@ KBEngineLua.Client_onUpdateData_xz_pr = function(stream)
 	
 	local xz = stream:readPackXZ();
 
-	local p = stream:readInt8();
-	local r = stream:readInt8();
+	local p = stream:ReadByte();
+	local r = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, KBEngineLua.KBE_FLT_MAX, p, r, 1);
 end
@@ -1358,7 +1380,7 @@ KBEngineLua.Client_onUpdateData_xz_y = function(stream)
 	
 	local xz = stream:readPackXZ();
 
-	local y = stream:readInt8();
+	local y = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 1);
 end
@@ -1369,7 +1391,7 @@ KBEngineLua.Client_onUpdateData_xz_p = function(stream)
 	
 	local xz = stream:readPackXZ();
 
-	local p = stream:readInt8();
+	local p = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, KBEngineLua.KBE_FLT_MAX, p, KBEngineLua.KBE_FLT_MAX, 1);
 end
@@ -1380,7 +1402,7 @@ KBEngineLua.Client_onUpdateData_xz_r = function(stream)
 	
 	local xz = stream:readPackXZ();
 
-	local r = stream:readInt8();
+	local r = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, r, 1);
 end
@@ -1402,9 +1424,9 @@ KBEngineLua.Client_onUpdateData_xyz_ypr = function(stream)
 	local xz = stream:readPackXZ();
 	local y = stream:readPackY();
 	
-	local yaw = stream:readInt8();
-	local p = stream:readInt8();
-	local r = stream:readInt8();
+	local yaw = stream:ReadByte();
+	local p = stream:ReadByte();
+	local r = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, yaw, p, r, 0);
 end
@@ -1416,8 +1438,8 @@ KBEngineLua.Client_onUpdateData_xyz_yp = function(stream)
 	local xz = stream:readPackXZ();
 	local y = stream:readPackY();
 	
-	local yaw = stream:readInt8();
-	local p = stream:readInt8();
+	local yaw = stream:ReadByte();
+	local p = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, yaw, p, KBEngineLua.KBE_FLT_MAX, 0);
 end
@@ -1429,8 +1451,8 @@ KBEngineLua.Client_onUpdateData_xyz_yr = function(stream)
 	local xz = stream:readPackXZ();
 	local y = stream:readPackY();
 	
-	local yaw = stream:readInt8();
-	local r = stream:readInt8();
+	local yaw = stream:ReadByte();
+	local r = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, yaw, KBEngineLua.KBE_FLT_MAX, r, 0);
 end
@@ -1442,8 +1464,8 @@ KBEngineLua.Client_onUpdateData_xyz_pr = function(stream)
 	local xz = stream:readPackXZ();
 	local y = stream:readPackY();
 	
-	local p = stream:readInt8();
-	local r = stream:readInt8();
+	local p = stream:ReadByte();
+	local r = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, KBEngineLua.KBE_FLT_MAX, p, r, 0);
 end
@@ -1455,7 +1477,7 @@ KBEngineLua.Client_onUpdateData_xyz_y = function(stream)
 	local xz = stream:readPackXZ();
 	local y = stream:readPackY();
 	
-	local yaw = stream:readInt8();
+	local yaw = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, yaw, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 0);
 end
@@ -1467,7 +1489,7 @@ KBEngineLua.Client_onUpdateData_xyz_p = function(stream)
 	local xz = stream:readPackXZ();
 	local y = stream:readPackY();
 	
-	local p = stream:readInt8();
+	local p = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, KBEngineLua.KBE_FLT_MAX, p, KBEngineLua.KBE_FLT_MAX, 0);
 end
@@ -1479,7 +1501,7 @@ KBEngineLua.Client_onUpdateData_xyz_r = function(stream)
 	local xz = stream:readPackXZ();
 	local y = stream:readPackY();
 	
-	local r = stream:readInt8();
+	local r = stream:ReadByte();
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, r, 0);
 end
@@ -1543,7 +1565,6 @@ KBEngineLua._updateVolatileData = function(entityID, x, y, z, yaw, pitch, roll, 
 end
 
 KBEngineLua.login = function( username, password, data )
-	print ('lj kbe', username, password, data);
 	KBEngineLua.username = username;
 	KBEngineLua.password = password;
     KBEngineLua._clientdatas = data;
@@ -1558,13 +1579,12 @@ KBEngineLua.login_loginapp = function( noconnect )
 		this._networkInterface:Connect(this.ip, this.port, scene_);
 
 		local serverConnection = this._networkInterface:GetServerConnection();
-		print ("lj conn", serverConnection, serverConnection:IsClient(), this._networkInterface.serverRunning)
 	else
 		logInfo("KBEngine::login_loginapp(): send login! username=" .. this.username);
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Loginapp_login"]);
 		bundle:writeInt8(this.clientType);
-		bundle:writeBlob(KBELuaUtil.Utf8ToByte(this._clientdatas));
+		bundle:writeBlob(this._clientdatas);
 		bundle:writeString(this.username);
 		bundle:writeString(this.password);
 		bundle:send();
@@ -1583,10 +1603,12 @@ KBEngineLua.onConnectTo_loginapp_callback = function( ip, port, success, userDat
 			
 	logInfo("KBEngine::login_loginapp(): connect ".. ip.. ":"..port.." success!"); 
 
-	this.hello();	
 end
 
 KBEngineLua.onLogin_loginapp = function()
+	this.currserver = "loginapp";
+	this.currstate = "login";
+
 	this._lastTickCBTime = os.clock();
 	if not this.loginappMessageImported_ then
 		local bundle = KBEngineLua.Bundle:New();
@@ -1625,7 +1647,6 @@ KBEngineLua.onConnectTo_baseapp_callback = function(ip, port, success, userData)
 	
 	logInfo("KBEngine::login_baseapp(): connect "..ip..":"..port.." is successfully!");
 
-	this.hello();
 end
 
 KBEngineLua.onLogin_baseapp = function()
@@ -1642,8 +1663,6 @@ KBEngineLua.onLogin_baseapp = function()
 end
 
 KBEngineLua.hello = function()
-	print ("lj hello", KBEngineLua.currserver);
-
 	local bundle = KBEngineLua.Bundle:New();
 
 	if KBEngineLua.currserver == "loginapp" then
@@ -1659,10 +1678,10 @@ KBEngineLua.hello = function()
 end
 
 KBEngineLua.Client_onHelloCB = function( stream )
-	this.serverVersion = stream:readString();
-	this.serverScriptVersion = stream:readString();
-	this.serverProtocolMD5 = stream:readString();
-	this.serverEntitydefMD5 = stream:readString();
+	this.serverVersion = stream:ReadString();
+	this.serverScriptVersion = stream:ReadString();
+	this.serverProtocolMD5 = stream:ReadString();
+	this.serverEntitydefMD5 = stream:ReadString();
 	local ctype = stream:readInt32();
 	
 	logInfo("KBEngine::Client_onHelloCB: verInfo(" .. KBEngineLua.serverVersion 
@@ -1688,17 +1707,17 @@ end
 
 	--登录loginapp失败了
 KBEngineLua.Client_onLoginFailed = function(stream)
-	local failedcode = stream:readUint16();
+	local failedcode = stream:ReadUShort();
 	this._serverdatas = stream:readBlob();
 	logInfo("KBEngine::Client_onLoginFailed: failedcode(" .. failedcode .. "), datas(" .. this._serverdatas.Length .. ")!");
 	Event.Brocast("onLoginFailed", failedcode);
 end
 
 KBEngineLua.Client_onLoginSuccessfully = function(stream)
-	local accountName = stream:readString();
+	local accountName = stream:ReadString();
 	this.username = accountName;
-	this.baseappIP = stream:readString();
-	this.baseappPort = stream:readUint16();
+	this.baseappIP = stream:ReadString();
+	this.baseappPort = stream:ReadUShort();
 
 	this._serverdatas = stream:readBlob();
 	
@@ -1897,7 +1916,7 @@ end
 --	引擎版本不匹配
 
 KBEngineLua.Client_onVersionNotMatch = function(stream)
-	this.serverVersion = stream:readString();
+	this.serverVersion = stream:ReadString();
 	
 	logInfo("Client_onVersionNotMatch: verInfo=" .. this.clientVersion .. "(server: " .. this.serverVersion .. ")");
 	--Event.fireAll("onVersionNotMatch", new object[]{clientVersion, serverVersion});
@@ -1910,7 +1929,7 @@ end
 --	脚本版本不匹配
 
 KBEngineLua.Client_onScriptVersionNotMatch = function(stream)
-	this.serverScriptVersion = stream:readString();
+	this.serverScriptVersion = stream:ReadString();
 	
 	logInfo("Client_onScriptVersionNotMatch: verInfo=" .. this.clientScriptVersion .. "(server: " .. this.serverScriptVersion .. ")");
 	--Event.fireAll("onScriptVersionNotMatch", new object[]{clientScriptVersion, this.serverScriptVersion});
