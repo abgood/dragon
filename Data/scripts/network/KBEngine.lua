@@ -70,7 +70,7 @@ KBEngineLua._clientdatas = {};
 KBEngineLua._encryptedKey = "";
 
 -- 服务端与客户端的版本号以及协议MD5
-KBEngineLua.clientVersion = "0.9.12";
+KBEngineLua.clientVersion = "2.5.7";
 KBEngineLua.clientScriptVersion = "0.1.0";
 KBEngineLua.serverVersion = "";
 KBEngineLua.serverScriptVersion = "";
@@ -287,10 +287,9 @@ KBEngineLua.createDataTypeFromStream = function(stream, canprint)
 end
 
 KBEngineLua.Client_onImportClientEntityDef = function(stream)
-	local datas = stream:GetBuffer();
 	this.onImportClientEntityDef(stream);
 	if(this._persistentInfos ~= nil) then
-		this._persistentInfos:onImportClientEntityDef(datas);
+		this._persistentInfos:onImportClientEntityDef(stream);
 	end
 end
 
@@ -459,10 +458,9 @@ end
 KBEngineLua.Client_onImportClientMessages = function( stream )
 	this.onImportClientMessages (stream);
 	
-	print ("lj test");
-	-- if(this._persistentInfos ~= nil) then
-	-- 	this._persistentInfos:onImportClientMessages(this.currserver, stream);
-	-- end
+	if(this._persistentInfos ~= nil) then
+		this._persistentInfos:onImportClientMessages(this.currserver, stream);
+	end
 end
 
 KBEngineLua.onImportClientMessages = function( stream )
@@ -514,12 +512,20 @@ KBEngineLua.onImportClientMessages = function( stream )
 end
 
 KBEngineLua.Client_onImportServerErrorsDescr = function(stream)
-	local datas = stream:GetBuffer();
 	this.onImportServerErrorsDescr(stream);
 	
 	if(this._persistentInfos ~= nil) then
-		this._persistentInfos:onImportServerErrorsDescr(datas);
+		this._persistentInfos:onImportServerErrorsDescr(stream);
 	end
+end
+
+KBEngineLua.readBlob = function(stream)
+	datas = VectorBuffer();
+
+	size = stream:ReadUInt();
+	datas:SetData(stream, size);
+
+	return datas:ReadString();
 end
 
 KBEngineLua.onImportServerErrorsDescr = function(stream)
@@ -530,11 +536,12 @@ KBEngineLua.onImportServerErrorsDescr = function(stream)
 		
 		local e = {};
 		e.id = stream:ReadUShort();
-		e.name = KBELuaUtil.ByteToUtf8(stream:readBlob());
-		e.descr = KBELuaUtil.ByteToUtf8(stream:readBlob());
+
+		e.name = this.readBlob(stream);
+		e.descr = this.readBlob(stream);
 		
 		this.serverErrs[e.id] = e;
-		--logInfo("Client_onImportServerErrorsDescr: id=" + e.id + ", name=" + e.name + ", descr=" + e.descr);
+		-- logInfo("Client_onImportServerErrorsDescr: id = " .. e.id .. ", name = " .. e.name .. ", descr = " .. e.descr);
 	end
 end
 	-- 从二进制流导入消息协议完毕了
@@ -553,7 +560,8 @@ KBEngineLua.onImportClientMessagesCompleted = function()
 		end
 		
 		if(this.currstate == "login") then
-			this.login_loginapp(false);
+			print ("lj test");
+			-- this.login_loginapp(false);
 		elseif(this.currstate == "autoimport") then
 		elseif(this.currstate == "resetpassword") then
 			this.resetpassword_loginapp(false);
@@ -635,12 +643,12 @@ end
 
 KBEngineLua.getAoiEntityIDFromStream = function(stream)
 	if not this.useAliasEntityID then
-		return stream:readInt32();
+		return stream:ReadInt();
 	end
 
 	local id = 0;
 	if(#KBEngineLua.entityIDAliasIDList > 255)then
-		id = stream:readInt32();
+		id = stream:ReadInt();
 	else
 		local aliasID = stream:ReadUByte();
 
@@ -717,7 +725,7 @@ KBEngineLua.Client_onUpdatePropertysOptimized = function(stream)
 end
 
 KBEngineLua.Client_onUpdatePropertys = function(stream)
-	local eid = stream:readInt32();
+	local eid = stream:ReadInt();
 	KBEngineLua.onUpdatePropertys_(eid, stream);
 end
 
@@ -756,12 +764,12 @@ KBEngineLua.Client_onRemoteMethodCallOptimized = function(stream)
 end
 
 KBEngineLua.Client_onRemoteMethodCall = function(stream)
-	local eid = stream:readInt32();
+	local eid = stream:ReadInt();
 	KBEngineLua.onRemoteMethodCall_(eid, stream);
 end
 
 KBEngineLua.Client_onEntityEnterWorld = function(stream)
-	local eid = stream:readInt32();
+	local eid = stream:ReadInt();
 	if(KBEngineLua.entity_id > 0 and eid ~= KBEngineLua.entity_id) then
 		table.insert(KBEngineLua.entityIDAliasIDList, eid);
 	end
@@ -910,7 +918,7 @@ end
 
 KBEngineLua.Client_onEntityEnterSpace = function(stream)
 
-	local eid = stream:readInt32();
+	local eid = stream:ReadInt();
 	KBEngineLua.spaceID = stream:readUint32();
 	local isOnGround = true;
 	
@@ -946,7 +954,7 @@ end
 KBEngineLua.Client_onCreateAccountResult = function(stream)
 
 	local retcode = stream:ReadUShort();
-	local datas = stream:readBlob();
+	local datas = stream:ReadBuffer();
 	
 	Event.Brocast("onCreateAccountResult", retcode, datas);
 
@@ -1130,7 +1138,7 @@ KBEngineLua.Client_initSpaceData = function(stream)
 
 	KBEngineLua.clearSpace(false);
 	
-	KBEngineLua.spaceID = stream:readInt32();
+	KBEngineLua.spaceID = stream:ReadInt();
 	while(stream:length() > 0) do
 		local key = stream:ReadString();
 		local value = stream:ReadString();
@@ -1222,7 +1230,7 @@ end
 
 KBEngineLua.Client_onSetEntityPosAndDir = function(stream)
 
-	local eid = stream:readInt32();
+	local eid = stream:ReadInt();
 	local entity = KBEngineLua.entities[eid];
 	if(entity == nil) then
 		logInfo("KBEngineApp::Client_onSetEntityPosAndDir: entity(" .. eid .. ") not found!");
@@ -1682,7 +1690,7 @@ KBEngineLua.Client_onHelloCB = function( stream )
 	this.serverScriptVersion = stream:ReadString();
 	this.serverProtocolMD5 = stream:ReadString();
 	this.serverEntitydefMD5 = stream:ReadString();
-	local ctype = stream:readInt32();
+	local ctype = stream:ReadInt();
 	
 	logInfo("KBEngine::Client_onHelloCB: verInfo(" .. KBEngineLua.serverVersion 
 		.. "), scriptVersion(".. KBEngineLua.serverScriptVersion .. "), srvProtocolMD5(".. KBEngineLua.serverProtocolMD5 
@@ -1708,7 +1716,7 @@ end
 	--登录loginapp失败了
 KBEngineLua.Client_onLoginFailed = function(stream)
 	local failedcode = stream:ReadUShort();
-	this._serverdatas = stream:readBlob();
+	this._serverdatas = stream:ReadBuffer();
 	logInfo("KBEngine::Client_onLoginFailed: failedcode(" .. failedcode .. "), datas(" .. this._serverdatas.Length .. ")!");
 	Event.Brocast("onLoginFailed", failedcode);
 end
@@ -1719,7 +1727,7 @@ KBEngineLua.Client_onLoginSuccessfully = function(stream)
 	this.baseappIP = stream:ReadString();
 	this.baseappPort = stream:ReadUShort();
 
-	this._serverdatas = stream:readBlob();
+	this._serverdatas = stream:ReadBuffer();
 	
 	logInfo("KBEngine::Client_onLoginSuccessfully: accountName(" .. accountName .. "), addr(" .. 
 			this.baseappIP .. ":" .. this.baseappPort .. "), datas(" .. this._serverdatas.Length .. ")!");
@@ -1879,7 +1887,7 @@ KBEngineLua.createAccount_loginapp = function(noconnect)
 		bundle:newMessage(KBEngineLua.messages["Loginapp_reqCreateAccount"]);
 		bundle:writeString(this.username);
 		bundle:writeString(this.password);
-		bundle:writeBlob(KBELuaUtil.Utf8ToByte(this._clientdatas));
+		bundle:writeBlob(this._clientdatas);
 		bundle:send();
 	end
 end

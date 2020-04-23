@@ -124,7 +124,7 @@ local reader = KBEngineLua.MessageReader;
 
 function KBEngineLua.MessageReader.process(packet)
 	length = packet.size;
-	print ("lj pro", length, packet.position);
+	logInfo("KBEngineLua.MessageReader.process: recv packet size: " .. length);
 
 	while(length > 0 and reader.expectSize > 0)
 	do

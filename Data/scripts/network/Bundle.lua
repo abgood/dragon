@@ -28,6 +28,7 @@ function KBEngineLua.Bundle:newMessage(mt)
 
 	self:writeUint16(self.msgtype.id);
 
+	self.messageLength = 0;
 	self._curMsgStreamIndex = 0;
 end
 
@@ -40,8 +41,7 @@ function KBEngineLua.Bundle:writeMsgLength()
 		stream = self.streamList[idx];
 	end
 
-	num = self.messageLength;
-	stream:WriteUShort(num);
+	stream:WriteUShort(self.messageLength);
 end
 
 ---------------------------------------------------------------------------------
