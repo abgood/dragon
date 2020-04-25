@@ -63,8 +63,8 @@ KBEngineLua.currstate = "";
 KBEngineLua.baseappIP = "";
 KBEngineLua.baseappPort = nil;
 
-KBEngineLua._serverdatas = {};
-KBEngineLua._clientdatas = {};
+KBEngineLua._serverdatas = VectorBuffer();
+KBEngineLua._clientdatas = VectorBuffer();
 
 -- 通信协议加密，blowfish协议--没用过~
 KBEngineLua._encryptedKey = "";
@@ -560,8 +560,7 @@ KBEngineLua.onImportClientMessagesCompleted = function()
 		end
 		
 		if(this.currstate == "login") then
-			print ("lj test");
-			-- this.login_loginapp(false);
+			this.login_loginapp(false);
 		elseif(this.currstate == "autoimport") then
 		elseif(this.currstate == "resetpassword") then
 			this.resetpassword_loginapp(false);

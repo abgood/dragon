@@ -82,11 +82,12 @@ function KBEngineLua.Bundle:send()
 end
 
 function KBEngineLua.Bundle:checkStream(v)
-	if(self.stream:GetSize() > 0 and v > self.stream:GetSize()) then
+	if (self.stream.size > 0 and v > self.stream.size) then
 		table.insert(self.streamList, self.stream);
 		self.stream = VectorBuffer();
 		self._curMsgStreamIndex = self._curMsgStreamIndex + 1;
 	end
+
 	self.messageLength = self.messageLength + v;
 end
 
@@ -147,10 +148,16 @@ function KBEngineLua.Bundle:writeString(v)
 end
 
 function KBEngineLua.Bundle:writeBlob(v)
-	self:writeUint32(#v);
-	if #v > 0 then
-		self:checkStream(#v);
-		print ("lj test");
-		-- self.stream:WriteBuffer(v);
+	if type(v) == "string" then
+		self:writeUint32(#v);
+		if #v > 0 then
+			self:writeString(v);
+		end
+	else
+		self:writeUint32(v.size);
+		if v.size > 0 then
+			self:checkStream(v.size);
+			self.stream:SetData(v, v.size);
+		end
 	end
 end
