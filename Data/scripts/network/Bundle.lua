@@ -1,4 +1,3 @@
-require "bit"
 -----------------------------------------------------------------------------------------
 --												bundle
 -----------------------------------------------------------------------------------------*/
@@ -14,7 +13,6 @@ function KBEngineLua.Bundle:New()
 	me.numMessage = 0;
 	me.messageLength = 0;	
 	me.msgtype = nil;
-	me._curMsgStreamIndex = 0;
 
     return me;
 end
@@ -28,19 +26,18 @@ function KBEngineLua.Bundle:newMessage(mt)
 
 	self:writeUint16(self.msgtype.id);
 
+	if (self.msgtype.msglen == -1) then
+		table.insert(self.streamList, self.stream);
+		self.stream = VectorBuffer();
+		self.numMessage = self.numMessage + 1;
+	end
+
 	self.messageLength = 0;
-	self._curMsgStreamIndex = 0;
 end
 
 ---------------------------------------------------------------------------------
 function KBEngineLua.Bundle:writeMsgLength()
-	local stream = self.stream;
-	if(self._curMsgStreamIndex > 0) then
-		idx = #self.streamList - self._curMsgStreamIndex;
-		idx = math.max(1, idx);
-		stream = self.streamList[idx];
-	end
-
+	local stream = self.streamList[1];
 	stream:WriteUShort(self.messageLength);
 end
 
@@ -58,8 +55,6 @@ function KBEngineLua.Bundle:fini(issend)
 		self.numMessage = 0;
 		self.msgtype = nil;
 	end
-
-	self._curMsgStreamIndex = 0;
 end
 
 function KBEngineLua.Bundle:send()
@@ -82,12 +77,6 @@ function KBEngineLua.Bundle:send()
 end
 
 function KBEngineLua.Bundle:checkStream(v)
-	if (self.stream.size > 0 and v > self.stream.size) then
-		table.insert(self.streamList, self.stream);
-		self.stream = VectorBuffer();
-		self._curMsgStreamIndex = self._curMsgStreamIndex + 1;
-	end
-
 	self.messageLength = self.messageLength + v;
 end
 

@@ -11,6 +11,7 @@ require "scripts/network/PersistentInfos"
 require "scripts/network/Dbg"
 require "scripts/libs/Base"
 
+KBEngineLua.Event = require "scripts/network/events"
 
 
 -----------------可配置信息---------------
@@ -159,9 +160,12 @@ function HandleNetworkMessage(eventType, eventData)
 end
 
 KBEngineLua.Destroy = function()
-	logInfo("KBEngine::destroy()");  	
+	logInfo("KBEngine::destroy()");
 	this.reset();
 	this.resetMessages();
+
+	this.uninstallEvents()
+	this.installEvents()
 end
 
 KBEngineLua.player = function()
@@ -184,6 +188,32 @@ KBEngineLua.resetMessages = function()
 	this.entities = {};
 
 	logInfo("KBEngine::resetMessages()");
+end
+
+KBEngineLua.serverErr = function(id)
+	local e = this.serverErrs[id];
+	
+	if (e == nil) then
+		return "";
+	end
+
+	return e.name + " [" + e.descr + "]";
+end
+
+KBEngineLua.onLoginFailed = function(failedcode)
+	if (failedcode == 20) then
+		logError("Login is failed(登陆失败), err = " .. this.serverErr[failedcode] .. ", " .. this._serverdatas.ReadString());
+	else
+		logError("Login is failed(登陆失败), err = " .. this.serverErr[failedcode]);
+	end
+end
+
+KBEngineLua.installEvents = function()
+	KBEngineLua.Event.AddListener("onLoginFailed", this.onLoginFailed);
+end
+
+KBEngineLua.uninstallEvents = function()
+	KBEngineLua.Event.RemoveListener("onLoginFailed", this.onLoginFailed);
 end
 
 KBEngineLua.importMessagesFromMemoryStream = function(loginapp_clientMessages, baseapp_clientMessages,  entitydefMessages, serverErrorsDescr)
@@ -577,7 +607,7 @@ KBEngineLua.onImportClientMessagesCompleted = function()
 			local bundle = KBEngineLua.Bundle:New();
 			bundle:newMessage(KBEngineLua.messages["Baseapp_importClientEntityDef"]);
 			bundle:send();
-			--Event.fireOut("Baseapp_importClientEntityDef", new object[]{});
+			--KBEngineLua.Event.fireOut("Baseapp_importClientEntityDef", new object[]{});
 		else
 			this.onImportEntityDefCompleted();
 		end
@@ -883,7 +913,7 @@ KBEngineLua.Client_onEntityLeaveWorld = function(eid)
 	else
 		table.removeItem(this.controlledEntities, entity, false);
 		--if(_controlledEntities.Remove(entity))
-		--	Event.fireOut("onLoseControlledEntity", new object[]{entity});
+		--	KBEngineLua.Event.fireOut("onLoseControlledEntity", new object[]{entity});
 		this.entities[eid] = nil;
 		entity:onDestroy();
 		table.removeItem(this.entityIDAliasIDList, eid, false);
@@ -908,7 +938,7 @@ KBEngineLua.Client_onEntityDestroyed = function(eid)
 
 	table.removeItem(this.controlledEntities, entity, false);
 	--if(_controlledEntities.Remove(entity))
-	--	Event.fireOut("onLoseControlledEntity", new object[]{entity});
+	--	KBEngineLua.Event.fireOut("onLoseControlledEntity", new object[]{entity});
 		
 	KBEngineLua.entities[eid] = nil;
 	entity.onDestroy();
@@ -955,7 +985,7 @@ KBEngineLua.Client_onCreateAccountResult = function(stream)
 	local retcode = stream:ReadUShort();
 	local datas = stream:ReadBuffer();
 	
-	Event.Brocast("onCreateAccountResult", retcode, datas);
+	KBEngineLua.Event.Brocast("onCreateAccountResult", retcode, datas);
 
 	if(retcode ~= 0) then
 		logInfo("KBEngineApp::Client_onCreateAccountResult: " .. KBEngineLua.username .. " create is failed! code=" .. KBEngineLua.serverErrs[retcode].name .. "!");
@@ -991,7 +1021,7 @@ KBEngineLua.Client_onControlEntity = function(eid, isControlled)
 	entity.isControlled = isCont;
 	
 	entity.onControlled(isCont);
-	--Event.fireOut("onControlled", new object[]{entity, isCont});
+	--KBEngineLua.Event.fireOut("onControlled", new object[]{entity, isCont});
 end
 
 KBEngineLua.updatePlayerToServer = function()
@@ -1090,7 +1120,7 @@ KBEngineLua.addSpaceGeometryMapping = function(spaceID, respath)
 	
 	KBEngineLua.spaceID = spaceID;
 	KBEngineLua.spaceResPath = respath;
-	Event.Brocast("addSpaceGeometryMapping", respath);
+	KBEngineLua.Event.Brocast("addSpaceGeometryMapping", respath);
 end
 
 KBEngineLua.clearSpace = function(isAll)
@@ -1183,7 +1213,7 @@ KBEngineLua.Client_onUpdateBasePos = function(x, y, z)
 		entity.position.x = _entityServerPos.x;
 		entity.position.y = _entityServerPos.y;
 		entity.position.z = _entityServerPos.z;
-		Event.Brocast("updatePosition", entity);
+		KBEngineLua.Event.Brocast("updatePosition", entity);
 		entity.onUpdateVolatileData();
 	end
 end
@@ -1197,7 +1227,7 @@ KBEngineLua.Client_onUpdateBasePosXZ = function(x, z)
 	if (entity ~= nil and entity.isControlled) then
 		entity.position.x = _entityServerPos.x;
 		entity.position.z = _entityServerPos.z;
-		Event.Brocast("updatePosition", entity);
+		KBEngineLua.Event.Brocast("updatePosition", entity);
 		entity.onUpdateVolatileData();
 	end
 end
@@ -1212,7 +1242,7 @@ KBEngineLua.Client_onUpdateBaseDir = function(stream)
 		entity.direction.x = x;
 		entity.direction.y = y;
 		entity.direction.z = z;
-		Event.Brocast("set_direction", entity);
+		KBEngineLua.Event.Brocast("set_direction", entity);
 		entity.onUpdateVolatileData();
 	end
 end
@@ -1548,7 +1578,7 @@ KBEngineLua._updateVolatileData = function(entityID, x, y, z, yaw, pitch, roll, 
 	
 	local done = false;
 	if(changeDirection == true) then
-		Event.Brocast("set_direction", entity);		
+		KBEngineLua.Event.Brocast("set_direction", entity);		
 		done = true;
 	end
 	
@@ -1563,7 +1593,7 @@ KBEngineLua._updateVolatileData = function(entityID, x, y, z, yaw, pitch, roll, 
 		entity.position.z = z + KBEngineLua.entityServerPos.z;
 		
 		done = true;
-		Event.Brocast("updatePosition", entity);
+		KBEngineLua.Event.Brocast("updatePosition", entity);
 	end
 	
 	if(done) then
@@ -1630,7 +1660,7 @@ end
 -----登录到服务端，登录到网关(baseapp)
 KBEngineLua.login_baseapp = function(noconnect)
 	if(noconnect) then
-		--Event.fireOut("onLoginBaseapp", new object[]{});
+		--KBEngineLua.Event.fireOut("onLoginBaseapp", new object[]{});
 		this._networkInterface:Disconnect();
 		this._networkInterface:Connect(this.baseappIP, this.baseappPort, this.onConnectTo_baseapp_callback, nil);
 	else
@@ -1663,7 +1693,7 @@ KBEngineLua.onLogin_baseapp = function()
 		bundle:newMessage(KBEngineLua.messages["Baseapp_importClientMessages"]);
 		bundle:send();
 		logInfo("KBEngine::onLogin_baseapp: send importClientMessages ...");
-		--Event.fireOut("Baseapp_importClientMessages", new object[]{});
+		--KBEngineLua.Event.fireOut("Baseapp_importClientMessages", new object[]{});
 	else
 		this.onImportClientMessagesCompleted();
 	end
@@ -1716,8 +1746,8 @@ end
 KBEngineLua.Client_onLoginFailed = function(stream)
 	local failedcode = stream:ReadUShort();
 	this._serverdatas = stream:ReadBuffer();
-	logInfo("KBEngine::Client_onLoginFailed: failedcode(" .. failedcode .. "), datas(" .. this._serverdatas.Length .. ")!");
-	Event.Brocast("onLoginFailed", failedcode);
+	logInfo("KBEngine::Client_onLoginFailed: failedcode(" .. failedcode .. "), datas(" .. this._serverdatas.size .. ")!");
+	KBEngineLua.Event.Brocast("onLoginFailed", failedcode);
 end
 
 KBEngineLua.Client_onLoginSuccessfully = function(stream)
@@ -1729,7 +1759,7 @@ KBEngineLua.Client_onLoginSuccessfully = function(stream)
 	this._serverdatas = stream:ReadBuffer();
 	
 	logInfo("KBEngine::Client_onLoginSuccessfully: accountName(" .. accountName .. "), addr(" .. 
-			this.baseappIP .. ":" .. this.baseappPort .. "), datas(" .. this._serverdatas.Length .. ")!");
+			this.baseappIP .. ":" .. this.baseappPort .. "), datas(" .. this._serverdatas.size .. ")!");
 	
 	this.login_baseapp(true);
 end
@@ -1743,7 +1773,8 @@ KBEngineLua.reset = function()
 
 	this.currserver = "";
 	this.currstate = "";
-	this._serverdatas = {};
+	this._serverdatas = VectorBuffer();
+	this._clientdatas = VectorBuffer();
 	this.serverVersion = "";
 	this.serverScriptVersion = "";
 	
@@ -1926,7 +1957,7 @@ KBEngineLua.Client_onVersionNotMatch = function(stream)
 	this.serverVersion = stream:ReadString();
 	
 	logInfo("Client_onVersionNotMatch: verInfo=" .. this.clientVersion .. "(server: " .. this.serverVersion .. ")");
-	--Event.fireAll("onVersionNotMatch", new object[]{clientVersion, serverVersion});
+	--KBEngineLua.Event.fireAll("onVersionNotMatch", new object[]{clientVersion, serverVersion});
 	
 	if(this._persistentInfos ~= nil) then
 		this._persistentInfos:onVersionNotMatch(this.clientVersion, this.serverVersion);
@@ -1939,7 +1970,7 @@ KBEngineLua.Client_onScriptVersionNotMatch = function(stream)
 	this.serverScriptVersion = stream:ReadString();
 	
 	logInfo("Client_onScriptVersionNotMatch: verInfo=" .. this.clientScriptVersion .. "(server: " .. this.serverScriptVersion .. ")");
-	--Event.fireAll("onScriptVersionNotMatch", new object[]{clientScriptVersion, this.serverScriptVersion});
+	--KBEngineLua.Event.fireAll("onScriptVersionNotMatch", new object[]{clientScriptVersion, this.serverScriptVersion});
 	
 	if(_persistentInfos ~= nil) then
 		_persistentInfos.onScriptVersionNotMatch(this.clientScriptVersion, this.serverScriptVersion);
@@ -1950,14 +1981,14 @@ end
 
 KBEngineLua.Client_onKicked = function(failedcode)
 	logInfo("Client_onKicked: failedcode=" .. failedcode);
-	--Event.fireAll("onKicked", new object[]{failedcodeend);
+	--KBEngineLua.Event.fireAll("onKicked", new object[]{failedcodeend);
 end
 
 --	重登录到网关(baseapp)
 --	一些移动类应用容易掉线，可以使用该功能快速的重新与服务端建立通信
 
 KBEngineLua.reLoginBaseapp = function()
-	--Event.fireAll("onReloginBaseapp", new object[]{end);
+	--KBEngineLua.Event.fireAll("onReloginBaseapp", new object[]{end);
 	this._networkInterface:connectTo(this.baseappIP, this.baseappPort, this.onReConnectTo_baseapp_callback, nil);
 end
 
@@ -1984,20 +2015,20 @@ end
 	--登录baseapp失败了
 KBEngineLua.Client_onLoginBaseappFailed = function(failedcode)
 	logInfo("KBEngine::Client_onLoginBaseappFailed: failedcode(" .. failedcode .. ")!");
-	--Event.fireAll("onLoginBaseappFailed", new object[]{failedcode});
+	--KBEngineLua.Event.fireAll("onLoginBaseappFailed", new object[]{failedcode});
 end
 
 	--重登录baseapp失败了
 KBEngineLua.Client_onReloginBaseappFailed = function(failedcode)
 	logInfo("KBEngine::Client_onReloginBaseappFailed: failedcode(" .. failedcode .. ")!");
-	--Event.fireAll("onReloginBaseappFailed", new object[]{failedcodeend);
+	--KBEngineLua.Event.fireAll("onReloginBaseappFailed", new object[]{failedcodeend);
 end
 
 	--登录baseapp成功了
 KBEngineLua.Client_onReloginBaseappSuccessfully = function(stream)
 	this.entity_uuid = stream:readUint64();
 	logInfo("KBEngine::Client_onReloginBaseappSuccessfully: name(" .. this.username .. ")!");
-	--Event.fireAll("onReloginBaseappSuccessfully", new object[]{end);
+	--KBEngineLua.Event.fireAll("onReloginBaseappSuccessfully", new object[]{end);
 end
 
 
