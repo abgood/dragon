@@ -112,6 +112,7 @@ KBEngineLua.networkDataLength = 0;
 KBEngineLua.networkMsgLen = 0;
 
 
+
 KBEngineLua.GetArgs = function()
 	return this.clientVersion, this.clientScriptVersion, this.ip, this.port;
 end
@@ -129,6 +130,7 @@ end
 KBEngineLua.init = function()
 	print("network init")
 	this._networkInterface = network;
+	this.installEvents()
 end
 
 function HandleConnectionStatus(eventType, eventData)
@@ -197,14 +199,14 @@ KBEngineLua.serverErr = function(id)
 		return "";
 	end
 
-	return e.name + " [" + e.descr + "]";
+	return e.name .. " [" .. e.descr .. "]";
 end
 
 KBEngineLua.onLoginFailed = function(failedcode)
 	if (failedcode == 20) then
-		logError("Login is failed(登陆失败), err = " .. this.serverErr[failedcode] .. ", " .. this._serverdatas.ReadString());
+		logError("Login is failed(登陆失败), err = " .. this.serverErr(failedcode) .. ", " .. this._serverdatas.ReadString());
 	else
-		logError("Login is failed(登陆失败), err = " .. this.serverErr[failedcode]);
+		logError("Login is failed(登陆失败), err = " .. this.serverErr(failedcode));
 	end
 end
 

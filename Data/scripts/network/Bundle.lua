@@ -65,7 +65,7 @@ function KBEngineLua.Bundle:send()
 	if(networkInterface.serverConnection:IsConnected()) then
 		for i = 1, #self.streamList, 1 do
 			self.stream = self.streamList[i];
-			print ("lj sendmsg", self.stream, self.stream:GetSize());
+			logInfo("Bundle::send: packet length: " .. self.stream.size);  
 			networkInterface.serverConnection:SendMessage(0, true, true, self.stream);
 		end
 	else
