@@ -60,12 +60,14 @@ end
 function KBEngineLua.Bundle:send()
 	local networkInterface = KBEngineLua._networkInterface;
 	
+	logInfo("KBEngineLua network data send [C2S], msgid: " .. self.msgtype.id .. ", length: " .. self.messageLength);
+
 	self:fini(true);
 	
 	if(networkInterface.serverConnection:IsConnected()) then
 		for i = 1, #self.streamList, 1 do
 			self.stream = self.streamList[i];
-			logInfo("Bundle::send: packet length: " .. self.stream.size);  
+			logInfo("Bundle::send: packet length: " .. self.stream.size);
 			networkInterface.serverConnection:SendMessage(0, true, true, self.stream);
 		end
 	else
@@ -136,11 +138,19 @@ function KBEngineLua.Bundle:writeString(v)
 	self.stream:WriteString(v);
 end
 
+function KBEngineLua.Bundle:writeStringToStream(v)
+	self:checkStream(string.len(v));
+	for i = 1, string.len(v) do
+		char = string.sub(v, i, i);
+		self.stream:WriteUByte(char);
+	end
+end
+
 function KBEngineLua.Bundle:writeBlob(v)
 	if type(v) == "string" then
 		self:writeUint32(#v);
 		if #v > 0 then
-			self:writeString(v);
+			self:writeStringToStream(v);
 		end
 	else
 		self:writeUint32(v.size);

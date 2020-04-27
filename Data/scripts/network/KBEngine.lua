@@ -24,7 +24,7 @@ KBEngineLua.port = "20013";
 -- Web，HTML5，Flash		= 5,
 -- bots			= 6,
 -- Mini-Client			= 7,
-KBEngineLua.clientType = 1;
+KBEngineLua.clientType = 2;
 KBEngineLua.isOnInitCallPropertysSetMethods = true;
 KBEngineLua.useAliasEntityID = true;
 -----------------end-------------------------
@@ -145,6 +145,8 @@ function HandleNetworkMessage(eventType, eventData)
 		msglen = msg:ReadUShort();
 		this.networkDataLength = msglen + msg.position;
 		this.networkPacket:Clear();
+
+		logInfo("KBEngineLua network data recv [S2C], msgid: " .. msgid .. ", length: " .. this.networkDataLength);
 	end
 
 	msg:Seek(0);
@@ -204,7 +206,7 @@ end
 
 KBEngineLua.onLoginFailed = function(failedcode)
 	if (failedcode == 20) then
-		logError("Login is failed(登陆失败), err = " .. this.serverErr(failedcode) .. ", " .. this._serverdatas.ReadString());
+		logError("Login is failed(登陆失败), err = " .. this.serverErr(failedcode) .. ", " .. this._serverdatas);
 	else
 		logError("Login is failed(登陆失败), err = " .. this.serverErr(failedcode));
 	end
@@ -1623,6 +1625,8 @@ KBEngineLua.login_loginapp = function( noconnect )
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Loginapp_login"]);
 		bundle:writeInt8(this.clientType);
+		-- lj test
+		this._clientdatas = "789";
 		bundle:writeBlob(this._clientdatas);
 		bundle:writeString(this.username);
 		bundle:writeString(this.password);
@@ -1637,11 +1641,7 @@ KBEngineLua.onConnectTo_loginapp_callback = function( ip, port, success, userDat
 		return;
 	end
 			
-	this.currserver = "loginapp";
-	this.currstate = "login";
-			
 	logInfo("KBEngine::login_loginapp(): connect ".. ip.. ":"..port.." success!"); 
-
 end
 
 KBEngineLua.onLogin_loginapp = function()
@@ -1681,14 +1681,14 @@ KBEngineLua.onConnectTo_baseapp_callback = function(ip, port, success, userData)
 		return;
 	end
 	
-	this.currserver = "baseapp";
-	this.currstate = "";
-	
 	logInfo("KBEngine::login_baseapp(): connect "..ip..":"..port.." is successfully!");
 
 end
 
 KBEngineLua.onLogin_baseapp = function()
+	this.currserver = "baseapp";
+	this.currstate = "";
+
 	this._lastTickCBTime = os.clock();
 	if not this.baseappMessageImported_ then
 		local bundle = KBEngineLua.Bundle:New();
@@ -1747,8 +1747,8 @@ end
 	--登录loginapp失败了
 KBEngineLua.Client_onLoginFailed = function(stream)
 	local failedcode = stream:ReadUShort();
-	this._serverdatas = stream:ReadBuffer();
-	logInfo("KBEngine::Client_onLoginFailed: failedcode(" .. failedcode .. "), datas(" .. this._serverdatas.size .. ")!");
+	this._serverdatas = this.readBlob(stream);
+	logInfo("KBEngine::Client_onLoginFailed: failedcode(" .. failedcode .. "), datas(" .. string.len(this._serverdatas) .. ")!");
 	KBEngineLua.Event.Brocast("onLoginFailed", failedcode);
 end
 
@@ -1758,11 +1758,13 @@ KBEngineLua.Client_onLoginSuccessfully = function(stream)
 	this.baseappIP = stream:ReadString();
 	this.baseappPort = stream:ReadUShort();
 
-	this._serverdatas = stream:ReadBuffer();
+	this._serverdatas = this.readBlob(stream);
 	
 	logInfo("KBEngine::Client_onLoginSuccessfully: accountName(" .. accountName .. "), addr(" .. 
-			this.baseappIP .. ":" .. this.baseappPort .. "), datas(" .. this._serverdatas.size .. ")!");
+			this.baseappIP .. ":" .. this.baseappPort .. "), datas(" .. string.len(this._serverdatas) .. ")!");
 	
+	-- lj test
+	this.baseappIP = "192.168.56.101";
 	this.login_baseapp(true);
 end
 
