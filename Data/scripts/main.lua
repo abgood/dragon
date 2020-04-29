@@ -1,14 +1,18 @@
 
 require "scripts/libs/Base"
 
+
+local game = require 'game.game'
+local libnetwork = require 'network.KBEngine'
+local login = require 'login.login'
+
+
 function Start()
 	BaseStart()
 
 	CreateScene()
 
-	local game = require 'game.game'
-	local libnetwork = require 'network.KBEngine'
-	local login = require 'login.login'
+	installEvents()
 
 	game.init()
 	libnetwork.init()
@@ -22,6 +26,7 @@ function Start()
 end
 
 function Stop()
+	uninstallEvents()
 end
 
 function CreateScene()
@@ -49,4 +54,12 @@ end
 
 function HandleUpdate(eventType, eventData)
     local timeStep = eventData["TimeStep"]:GetFloat()
+end
+
+function installEvents()
+	libnetwork.Event.AddListener("onLoginSuccessfully", login.onLoginSuccessfully);
+end
+
+function uninstallEvents()
+	libnetwork.Event.RemoveListener("onLoginSuccessfully", login.onLoginSuccessfully);
 end

@@ -6,11 +6,11 @@ KBEngineLua.DATATYPE_UINT8 =
 	end,
 	
 	createFromStream = function(self, stream)
-		return stream:readInt8();
+		return stream:ReadByte();
 	end,
 	
 	addToStream = function(self, stream, v)
-		stream:writeUint8(v);
+		stream:WriteUByte(v);
 	end,
 
 	parseDefaultValStr = function(self, v)
@@ -36,11 +36,11 @@ KBEngineLua.DATATYPE_UINT16 =
 	end,
 	
 	createFromStream = function(self, stream)
-		return stream:readUint16();
+		return stream:ReadUShort();
 	end,
 	
 	addToStream = function(self, stream, v)
-		stream:writeUint16(v);
+		stream:WriteUShort(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -65,11 +65,11 @@ KBEngineLua.DATATYPE_UINT32 =
 	end,
 	
 	createFromStream = function(self, stream)
-		return stream:readUint32();
+		return stream:ReadUInt();
 	end,
 	
 	addToStream = function(self, stream, v)
-		stream:writeUint32(v);
+		stream:WriteUInt(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -95,11 +95,11 @@ KBEngineLua.DATATYPE_UINT64 =
 	end,
 	
 	createFromStream = function(self, stream)
-		return stream:readUint64();
+		return stream:ReadUInt64();
 	end,
 	
 	addToStream = function(self, stream, v)
-		stream:writeUint64(v);
+		stream:WriteUInt64(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -117,7 +117,7 @@ KBEngineLua.DATATYPE_INT8 =
 	end,
 	
 	createFromStream = function(self, stream)
-		return stream:readInt8();
+		return stream:ReadByte();
 	end,
 	
 	addToStream = function(self, stream, v)
@@ -146,11 +146,11 @@ KBEngineLua.DATATYPE_INT16 =
 	end,
 	
 	createFromStream = function(self, stream)
-		return stream:readInt16();
+		return stream:ReadShort();
 	end,
 	
 	addToStream = function(self, stream, v)
-		stream:writeInt16(v);
+		stream:WriteShort(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -175,11 +175,11 @@ KBEngineLua.DATATYPE_INT32 =
 	end,
 	
 	createFromStream = function(self, stream)
-		return stream:readInt32();
+		return stream:ReadInt();
 	end,
 	
 	addToStream = function(self, stream, v)
-		stream:writeInt32(v);
+		stream:WriteInt(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -205,11 +205,11 @@ KBEngineLua.DATATYPE_INT64 =
 	end,
 	
 	createFromStream = function(self, stream)
-		return stream:readInt64();
+		return stream:ReadInt64();
 	end,
 	
 	addToStream = function(self, stream, v)
-		stream:writeInt64(v);
+		stream:WriteInt64(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -227,11 +227,11 @@ KBEngineLua.DATATYPE_FLOAT =
 	end,
 	
 	createFromStream = function(self, stream)
-		return stream:readFloat();
+		return stream:ReadFloat();
 	end,
 	
 	addToStream = function(self, stream, v)
-		stream:writeFloat(v);
+		stream:WriteFloat(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -249,11 +249,11 @@ KBEngineLua.DATATYPE_DOUBLE =
 	end,
 	
 	createFromStream = function(self, stream)
-		return stream:readDouble();
+		return stream:ReadDouble();
 	end,
 	
 	addToStream = function(self, stream, v)
-		stream:writeDouble(v);
+		stream:WriteDouble(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -271,11 +271,11 @@ KBEngineLua.DATATYPE_STRING =
 	end,
 	
 	createFromStream = function(self, stream)
-		return stream:readString();
+		return stream:ReadString();
 	end,
 	
 	addToStream = function(self, stream, v)
-		stream:writeString(v);
+		stream:WriteString(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -293,16 +293,16 @@ KBEngineLua.DATATYPE_VECTOR2 =
 	end,
 	
 	createFromStream = function(self, stream)
-		return Vector2.New(stream:readFloat(), stream:readFloat());
+		return Vector2(stream:ReadFloat(), stream:ReadFloat());
 	end,
 	
 	addToStream = function(self, stream, v)
-		stream:writeFloat(v.x);
-		stream:writeFloat(v.y);
+		stream:WriteFloat(v.x);
+		stream:WriteFloat(v.y);
 	end,
 	
 	parseDefaultValStr = function(self, v)
-		return Vector2.New(0,0);
+		return Vector2(0,0);
 	end,
 	
 	isSameType = function(self, v)		
@@ -315,17 +315,17 @@ KBEngineLua.DATATYPE_VECTOR3 =
 	end,
 	
 	createFromStream = function(self, stream)
-		return Vector3.New(stream:readFloat(), stream:readFloat(), stream:readFloat());
+		return Vector3(stream:ReadFloat(), stream:ReadFloat(), stream:ReadFloat());
 	end,
 	
 	addToStream = function(self, stream, v)
-		stream:writeFloat(v.x);
-		stream:writeFloat(v.y);
-		stream:writeFloat(v.z);
+		stream:WriteFloat(v.x);
+		stream:WriteFloat(v.y);
+		stream:WriteFloat(v.z);
 	end,
 	
 	parseDefaultValStr = function(self, v)
-		return Vector3.New(0,0,0);
+		return Vector3(0,0,0);
 	end,
 	
 	isSameType = function(self, v)		
@@ -339,18 +339,18 @@ KBEngineLua.DATATYPE_VECTOR4 =
 	end,
 	
 	createFromStream = function(self, stream)
-		return Vector4.New(stream:readFloat(), stream:readFloat(), stream:readFloat(), stream:readFloat());
+		return Vector4(stream:ReadFloat(), stream:ReadFloat(), stream:ReadFloat(), stream:ReadFloat());
 	end,
 	
 	addToStream = function(self, stream, v)
-		stream:writeFloat(v.x);
-		stream:writeFloat(v.y);
-		stream:writeFloat(v.z);
-		stream:writeFloat(v.w);
+		stream:WriteFloat(v.x);
+		stream:WriteFloat(v.y);
+		stream:WriteFloat(v.z);
+		stream:WriteFloat(v.w);
 	end,
 	
 	parseDefaultValStr = function(self, v)
-		return Vector4.New(0,0,0,0);
+		return Vector4(0,0,0,0);
 	end,
 	
 	isSameType = function(self, v)		
@@ -365,7 +365,7 @@ KBEngineLua.DATATYPE_PYTHON =
 	end,
 	
 	createFromStream = function(self, stream)
-		return stream:readBlob();
+		return KBEngineLua.readBlob(stream);
 	end,
 	
 	addToStream = function(self, stream, v)
@@ -387,7 +387,7 @@ KBEngineLua.DATATYPE_UNICODE =
 	end,
 
 	createFromStream = function(self, stream)
-		return KBELuaUtil.ByteToUtf8(stream:readBlob());
+		return KBELuaUtil.ByteToUtf8(KBEngineLua.readBlob(stream));
 	end,
 	
 	addToStream = function(self, stream, v)
@@ -432,7 +432,7 @@ KBEngineLua.DATATYPE_BLOB =
 	end,
 	
 	createFromStream = function(self, stream)
-		return stream:readBlob();
+		return KBEngineLua.readBlob(stream);
 	end,
 	
 	addToStream = function(self, stream, v)
@@ -465,7 +465,7 @@ KBEngineLua.DATATYPE_ARRAY.bind = function(self)
 end
 	
 KBEngineLua.DATATYPE_ARRAY.createFromStream = function(self, stream)
-	local size = stream:readUint32();
+	local size = stream:ReadUInt();
 	local datas = {};
 	while(size > 0)
 	do

@@ -11,6 +11,13 @@ require "scripts/network/PersistentInfos"
 require "scripts/network/Dbg"
 require "scripts/libs/Base"
 
+require "scripts/entity/Account"
+require "scripts/entity/Avatar"
+require "scripts/entity/Monster"
+require "scripts/entity/NPC"
+require "scripts/entity/Gate"
+
+
 KBEngineLua.Event = require "scripts/network/events"
 
 
@@ -134,7 +141,13 @@ KBEngineLua.init = function()
 end
 
 function HandleConnectionStatus(eventType, eventData)
-	this.onLogin_loginapp();
+	if (this.currserver == "") and (this.currstate == "") then
+		this.onLogin_loginapp();
+
+	elseif (this.currserver == "loginapp") and (this.currstate == "loginbaseapp") then
+		this.onLogin_baseapp();
+
+	end
 end
 
 function HandleNetworkMessage(eventType, eventData)
@@ -328,9 +341,9 @@ KBEngineLua.Client_onImportClientEntityDef = function(stream)
 end
 
 KBEngineLua.onImportClientEntityDef = function(stream)
-	KBEngineLua.createDataTypeFromStreams(stream, false);
+	KBEngineLua.createDataTypeFromStreams(stream, true);
 
-	while(stream:length() > 0)
+	while(not stream:IsEof())
 	do
 		local scriptmodule_name = stream:ReadString();
 		local scriptUtype = stream:ReadUShort();
@@ -363,7 +376,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 			propertysize = propertysize - 1;
 			
 			local properUtype = stream:ReadUShort();
-			local properFlags = stream:readUint32();
+			local properFlags = stream:ReadUInt();
 			local aliasID = stream:ReadShort();
 			local name = stream:ReadString();
 			local defaultValStr = stream:ReadString();
@@ -469,7 +482,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 			local defaultValStr = infos[4];
 			local utype = infos[5];
 
-			if(defmethod ~= nil) then
+			if (defmethod ~= nil) and (utype ~= nil) then
 				defmethod[name] = utype:parseDefaultValStr(defaultValStr);
             end
 		end
@@ -699,7 +712,6 @@ KBEngineLua.getAoiEntityIDFromStream = function(stream)
 end
 	
 KBEngineLua.onUpdatePropertys_ = function(eid, stream)
-
 	local entity = KBEngineLua.entities[eid];
 	
 	if(entity == nil) then
@@ -709,11 +721,11 @@ KBEngineLua.onUpdatePropertys_ = function(eid, stream)
 			return;
 		end
 		
-		local stream1 = KBEngine.MemoryStream.New();
-		stream1:copy(stream);
-		stream1.rpos = stream1.rpos - 4;--让出一个id
+		datas = VectorBuffer();
+		size = stream:ReadUInt();
+		datas:SetData(stream, stream.size - 4);
 
-		KBEngineLua.bufferedCreateEntityMessage[eid] = stream1;
+		KBEngineLua.bufferedCreateEntityMessage[eid] = datas;
 		return;
 	end
 	
@@ -952,7 +964,7 @@ end
 KBEngineLua.Client_onEntityEnterSpace = function(stream)
 
 	local eid = stream:ReadInt();
-	KBEngineLua.spaceID = stream:readUint32();
+	KBEngineLua.spaceID = stream:ReadUInt();
 	local isOnGround = true;
 	
 	if(stream:length() > 0) then
@@ -1765,6 +1777,7 @@ KBEngineLua.Client_onLoginSuccessfully = function(stream)
 	
 	-- lj test
 	this.baseappIP = "192.168.56.101";
+	this.currstate = "loginbaseapp";
 	this.login_baseapp(true);
 end
 

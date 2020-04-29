@@ -1,6 +1,4 @@
 
-KBELuaUtil = KBEngine.KBELuaUtil;
-
 function table.removeItem(list, item, removeAll)
   local rmCount = 0
   for i = 1, #list do

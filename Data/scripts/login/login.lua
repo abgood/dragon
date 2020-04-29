@@ -1,3 +1,4 @@
+require "scripts/network/Dbg"
 
 local game = require 'game.game'
 local libnetwork = require 'network.KBEngine'
@@ -21,6 +22,10 @@ mt.name = 'login'
 function login.init()
 	print("login init")
 	createLoginUI()
+end
+
+function login.onLoginSuccessfully()
+	logInfo("Login is successfully!(登陆成功!)");
 end
 
 function createLoginUI()
