@@ -54,6 +54,8 @@ end
 
 function HandleUpdate(eventType, eventData)
     local timeStep = eventData["TimeStep"]:GetFloat()
+
+	libnetwork.update();
 end
 
 function installEvents()

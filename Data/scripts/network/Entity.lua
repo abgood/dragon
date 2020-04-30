@@ -75,7 +75,9 @@ KBEngineLua.Entity.isPlayer = function(self)
 	return self.id == KBEngineLua.entity_id;
 end
 
-KBEngineLua.Entity.baseCall = function(self, arguments)
+KBEngineLua.Entity.baseCall = function(self, ...)
+	local arguments = {...};
+
 	if(#arguments < 1) then
 		logInfo('KBEngineLua.Entity::baseCall: not fount interfaceName~');  
 		return;
@@ -95,7 +97,7 @@ KBEngineLua.Entity.baseCall = function(self, arguments)
 		return;
 	end
 	
-	self.base:newMail();
+	self.base:newCall();
 	self.base.bundle:writeUint16(methodID);
 
 
@@ -105,10 +107,12 @@ KBEngineLua.Entity.baseCall = function(self, arguments)
         end     
 	end
 	
-	self.base:postMail(nil);
+	self.base:sendCall(nil);
 end
 
-KBEngineLua.Entity.cellCall = function(self, arguments)
+KBEngineLua.Entity.cellCall = function(self, ...)
+	local arguments = {...};
+
 	if(#arguments < 1) then
 		logInfo('KBEngineLua.Entity::cellCall: not fount interfaceName!');  
 		return;
@@ -128,7 +132,7 @@ KBEngineLua.Entity.cellCall = function(self, arguments)
 		return;
 	end
 	
-	self.cell:newMail();
+	self.cell:newCall();
 	self.cell.bundle:writeUint16(methodID);
 	
 	for i=1, #args do
@@ -137,7 +141,7 @@ KBEngineLua.Entity.cellCall = function(self, arguments)
 		end
 	end
 	
-	self.cell:postMail(nil);
+	self.cell:sendCall(nil);
 end
 	
 KBEngineLua.Entity.enterWorld = function(self)

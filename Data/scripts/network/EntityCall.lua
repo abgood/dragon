@@ -1,8 +1,8 @@
 
-KBEngineLua.Mailbox = {}
+KBEngineLua.EntityCall = {}
 
 
-function KBEngineLua.Mailbox:New()
+function KBEngineLua.EntityCall:New()
 	local me =  {};
 	setmetatable(me, self);
 	self.__index = self;
@@ -10,24 +10,20 @@ function KBEngineLua.Mailbox:New()
 	me.id = 0;
 	me.className = "";
 	me.type = 0;
-	me.networkInterface_ = KBEngineLua._networkInterface;
 	me.bundle = nil;
 
     return me;
 end
 
-function KBEngineLua.Mailbox:isBase( )
+function KBEngineLua.EntityCall:isBase( )
 	return self.type == 1;
 end
 
-function KBEngineLua.Mailbox:isCell( )
+function KBEngineLua.EntityCall:isCell( )
 	return self.type == 0;
 end
 
-
-	----创建新的mail
-
-function KBEngineLua.Mailbox:newMail()
+function KBEngineLua.EntityCall:newCall()
 
 	if(self.bundle == nil) then
 		self.bundle = KBEngineLua.Bundle:New();
@@ -36,7 +32,7 @@ function KBEngineLua.Mailbox:newMail()
 	if(self.type == 0) then
 		self.bundle:newMessage(KBEngineLua.messages["Baseapp_onRemoteCallCellMethodFromClient"]);
 	else
-		self.bundle:newMessage(KBEngineLua.messages["Base_onRemoteMethodCall"]);
+		self.bundle:newMessage(KBEngineLua.messages["Entity_onRemoteMethodCall"]);
 	end
 
 	self.bundle:writeInt32(self.id);
@@ -44,10 +40,7 @@ function KBEngineLua.Mailbox:newMail()
 	return self.bundle;
 end
 
-
-	---向服务端发送这个mail
-
-function KBEngineLua.Mailbox:postMail(inbundle)
+function KBEngineLua.EntityCall:sendCall(inbundle)
 
 	if(inbundle == nil) then
 		inbundle = self.bundle;

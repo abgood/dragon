@@ -5,7 +5,7 @@ local this = KBEngineLua;
 require "scripts/network/DataType"
 require "scripts/network/Message"
 require "scripts/network/Bundle"
-require "scripts/network/Mailbox"
+require "scripts/network/EntityCall"
 require "scripts/network/Entity"
 require "scripts/network/PersistentInfos"
 require "scripts/network/Dbg"
@@ -78,7 +78,7 @@ KBEngineLua._clientdatas = VectorBuffer();
 KBEngineLua._encryptedKey = "";
 
 -- 服务端与客户端的版本号以及协议MD5
-KBEngineLua.clientVersion = "2.5.7";
+KBEngineLua.clientVersion = "2.5.8";
 KBEngineLua.clientScriptVersion = "0.1.0";
 KBEngineLua.serverVersion = "";
 KBEngineLua.serverScriptVersion = "";
@@ -659,7 +659,7 @@ KBEngineLua.Client_onCreatedProxies = function(rndUUID, eid, entityType)
 		entity.id = eid;
 		entity.className = entityType;
 		
-		entity.base = KBEngineLua.Mailbox:New();
+		entity.base = KBEngineLua.EntityCall:New();
 		entity.base.id = eid;
 		entity.base.className = entityType;
 		entity.base.type = KBEngineLua.MAILBOX_TYPE_BASE;
@@ -853,7 +853,7 @@ KBEngineLua.Client_onEntityEnterWorld = function(stream)
 		entity.id = eid;
 		entity.className = entityType;
 
-		entity.cell = KBEngineLua.Mailbox:New();
+		entity.cell = KBEngineLua.EntityCall:New();
 		entity.cell.id = eid;
 		entity.cell.className = entityType;
 		entity.cell.type = KBEngineLua.MAILBOX_TYPE_CELL;
@@ -877,7 +877,7 @@ KBEngineLua.Client_onEntityEnterWorld = function(stream)
 		entity:set_position(entity.position);
 	else
 		if(not entity.inWorld) then
-			entity.cell = KBEngineLua.Mailbox:New();
+			entity.cell = KBEngineLua.EntityCall:New();
 			entity.cell.id = eid;
 			entity.cell.className = entityType;
 			entity.cell.type = KBEngineLua.MAILBOX_TYPE_CELL;
@@ -1740,12 +1740,7 @@ KBEngineLua.Client_onHelloCB = function( stream )
 		.. "), srvEntitydefMD5(".. KBEngineLua.serverEntitydefMD5 .. "), + ctype(" .. ctype .. ")!");
 	
 	this.onServerDigest();
-	
-	if this.currserver == "baseapp" then
-		this.onLogin_baseapp();
-	else
-		this.onLogin_loginapp();
-	end
+	this._lastTickCBTime = os.clock();
 end
 
 KBEngineLua.onServerDigest = function()
@@ -2050,7 +2045,7 @@ end
 
 
 KBEngineLua.sendTick = function()
-	if(not this._networkInterface:valid()) then
+	if(not this._networkInterface.serverConnection:IsConnected()) then
 		return;
 	end
 
@@ -2105,10 +2100,7 @@ end
 
 	---插件的主循环处理函数
 
-KBEngineLua.process = function()
-	-- 处理网络
-	this._networkInterface:process();
-	
+KBEngineLua.update = function()
 	-- 向服务端发送心跳以及同步角色信息到服务端
     this.sendTick();
 end
