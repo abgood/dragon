@@ -100,13 +100,9 @@ KBEngineLua.Entity.baseCall = function(self, ...)
 	self.base:newCall();
 	self.base.bundle:writeUint16(methodID);
 
+	datas = self:getArgsData(args);
+	self.base.bundle:writeBlob(datas);
 
-	for i=1, #args do
-		if(args[i]:isSameType(arguments[i + 1])) then
-			args[i]:addToStream(self.base.bundle, arguments[i + 1]);
-        end     
-	end
-	
 	self.base:sendCall(nil);
 end
 
@@ -134,16 +130,35 @@ KBEngineLua.Entity.cellCall = function(self, ...)
 	
 	self.cell:newCall();
 	self.cell.bundle:writeUint16(methodID);
-	
-	for i=1, #args do
-		if(args[i]:isSameType(arguments[i + 1])) then
-			args[i]:addToStream(self.cell.bundle, arguments[i + 1]);
-		end
-	end
-	
+
+	datas = self:getArgsData(args);
+	self.base.bundle:writeBlob(datas);
+
 	self.cell:sendCall(nil);
 end
-	
+
+KBEngineLua.Entity.getArgsData = function(self, args)
+	datas = VectorBuffer();
+
+	for i = 1, #args do
+		if type(i) == "string" then
+			for j = 1, string.len(i) do
+				char = string.sub(i, j, j);
+				datas:WriteUByte(char);
+			end
+
+		elseif type(i) == "number" then
+			datas:WriteUShort(i);
+
+		else
+			datas:SetData(i, i.size);
+
+		end
+	end
+
+	return datas;
+end
+
 KBEngineLua.Entity.enterWorld = function(self)
 	--logInfo(self.className .. '::enterWorld: ' .. self.id); 
 	self.inWorld = true;

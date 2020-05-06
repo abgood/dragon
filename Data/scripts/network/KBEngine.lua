@@ -22,7 +22,7 @@ KBEngineLua.Event = require "scripts/network/events"
 
 
 -----------------可配置信息---------------
-KBEngineLua.ip = "192.168.56.101";
+KBEngineLua.ip = "192.168.8.123";
 KBEngineLua.port = "20013";
 -- Mobile(Phone, Pad)	= 1,
 -- Windows Application program	= 2,
@@ -538,7 +538,7 @@ KBEngineLua.onImportClientMessages = function( stream )
 			if handler == nil then
 				logInfo("KBEngineApp::onImportClientMessages[" .. KBEngineLua.currserver .. "]: interface(" .. msgname .. "/" .. msgid .. ") no implement!");
 			else
-				logInfo("KBEngineApp::onImportClientMessages: import(" .. msgname .. ") successfully!");
+				logInfo("KBEngineApp::onImportClientMessages: import(" .. msgname .. "/" .. msgid .. ") successfully!");
 			end
 		end
 	
@@ -1771,7 +1771,7 @@ KBEngineLua.Client_onLoginSuccessfully = function(stream)
 			this.baseappIP .. ":" .. this.baseappPort .. "), datas(" .. string.len(this._serverdatas) .. ")!");
 	
 	-- lj test
-	this.baseappIP = "192.168.56.101";
+	this.baseappIP = "192.168.8.123";
 	this.currstate = "loginbaseapp";
 	this.login_baseapp(true);
 end
