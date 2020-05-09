@@ -22,7 +22,7 @@ KBEngineLua.Event = require "scripts/network/events"
 
 
 -----------------可配置信息---------------
-KBEngineLua.ip = "192.168.8.123";
+KBEngineLua.ip = "192.168.56.101";
 KBEngineLua.port = "20013";
 -- Mobile(Phone, Pad)	= 1,
 -- Windows Application program	= 2,
@@ -37,8 +37,8 @@ KBEngineLua.useAliasEntityID = true;
 -----------------end-------------------------
 
 
-KBEngineLua.MAILBOX_TYPE_CELL = 0;
-KBEngineLua.MAILBOX_TYPE_BASE = 1;
+KBEngineLua.ENTITYCALL_TYPE_CELL = 0;
+KBEngineLua.ENTITYCALL_TYPE_BASE = 1;
 KBEngineLua.KBE_FLT_MAX	= 3.402823466e+38;
 
 ----- player的相关信息
@@ -662,7 +662,7 @@ KBEngineLua.Client_onCreatedProxies = function(rndUUID, eid, entityType)
 		entity.base = KBEngineLua.EntityCall:New();
 		entity.base.id = eid;
 		entity.base.className = entityType;
-		entity.base.type = KBEngineLua.MAILBOX_TYPE_BASE;
+		entity.base.type = KBEngineLua.ENTITYCALL_TYPE_BASE;
 		
 		KBEngineLua.entities[eid] = entity;
 		
@@ -856,7 +856,7 @@ KBEngineLua.Client_onEntityEnterWorld = function(stream)
 		entity.cell = KBEngineLua.EntityCall:New();
 		entity.cell.id = eid;
 		entity.cell.className = entityType;
-		entity.cell.type = KBEngineLua.MAILBOX_TYPE_CELL;
+		entity.cell.type = KBEngineLua.ENTITYCALL_TYPE_CELL;
 		
 		KBEngineLua.entities[eid] = entity;
 		
@@ -880,7 +880,7 @@ KBEngineLua.Client_onEntityEnterWorld = function(stream)
 			entity.cell = KBEngineLua.EntityCall:New();
 			entity.cell.id = eid;
 			entity.cell.className = entityType;
-			entity.cell.type = KBEngineLua.MAILBOX_TYPE_CELL;
+			entity.cell.type = KBEngineLua.ENTITYCALL_TYPE_CELL;
 
 			-- 安全起见， 这里清空一下
 			-- 如果服务端上使用giveClientTo切换控制权
@@ -1771,7 +1771,7 @@ KBEngineLua.Client_onLoginSuccessfully = function(stream)
 			this.baseappIP .. ":" .. this.baseappPort .. "), datas(" .. string.len(this._serverdatas) .. ")!");
 	
 	-- lj test
-	this.baseappIP = "192.168.8.123";
+	this.baseappIP = "192.168.56.101";
 	this.currstate = "loginbaseapp";
 	this.login_baseapp(true);
 end
