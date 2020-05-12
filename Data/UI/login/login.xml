@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <element type="Window">
-	<attribute name="Name" value="bk" />
+	<attribute name="Name" value="loginUI" />
 	<attribute name="Size" value="600 400" />
 	<attribute name="Min Anchor" value="0.5 0.5" />
 	<attribute name="Max Anchor" value="0.5 0.5" />
@@ -38,7 +38,7 @@
 			<attribute name="Selection Color" value="0.3 0.4 0.32 1" />
 		</element>
 		<element type="BorderImage" internal="true" style="none">
-			<attribute name="Size" value="4 19" />
+			<attribute name="Size" value="4 15" />
 			<attribute name="Min Anchor" value="0 0.5" />
 			<attribute name="Max Anchor" value="0 0.5" />
 			<attribute name="Pivot" value="0 0.5" />
@@ -75,7 +75,7 @@
 			<attribute name="Selection Color" value="0.3 0.4 0.32 1" />
 		</element>
 		<element type="BorderImage" internal="true" style="none">
-			<attribute name="Size" value="4 19" />
+			<attribute name="Size" value="4 15" />
 			<attribute name="Min Anchor" value="0 0.5" />
 			<attribute name="Max Anchor" value="0 0.5" />
 			<attribute name="Pivot" value="0 0.5" />
