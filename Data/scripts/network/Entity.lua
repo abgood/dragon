@@ -100,8 +100,11 @@ KBEngineLua.Entity.baseCall = function(self, ...)
 	self.base:newCall();
 	self.base.bundle:writeUint16(methodID);
 
-	datas = self:getArgsData(args);
-	self.base.bundle:writeBlob(datas);
+	for i = 1, #args do
+		if(args[i]:isSameType(arguments[i + 1])) then
+			args[i]:addToStream(self.base.bundle, arguments[i + 1]);
+        end     
+	end
 
 	self.base:sendCall(nil);
 end
@@ -131,32 +134,13 @@ KBEngineLua.Entity.cellCall = function(self, ...)
 	self.cell:newCall();
 	self.cell.bundle:writeUint16(methodID);
 
-	datas = self:getArgsData(args);
-	self.base.bundle:writeBlob(datas);
-
-	self.cell:sendCall(nil);
-end
-
-KBEngineLua.Entity.getArgsData = function(self, args)
-	datas = VectorBuffer();
-
 	for i = 1, #args do
-		if type(i) == "string" then
-			for j = 1, string.len(i) do
-				char = string.sub(i, j, j);
-				datas:WriteUByte(char);
-			end
-
-		elseif type(i) == "number" then
-			datas:WriteUShort(i);
-
-		else
-			datas:SetData(i, i.size);
-
-		end
+		if(args[i]:isSameType(arguments[i + 1])) then
+			args[i]:addToStream(self.base.bundle, arguments[i + 1]);
+        end     
 	end
 
-	return datas;
+	self.cell:sendCall(nil);
 end
 
 KBEngineLua.Entity.enterWorld = function(self)
@@ -164,7 +148,7 @@ KBEngineLua.Entity.enterWorld = function(self)
 	self.inWorld = true;
 	self:onEnterWorld();
 	
-	Event.Brocast("onEnterWorld", self);
+	KBEngineLua.Event.Brocast("onEnterWorld", self);
 end
 
 KBEngineLua.Entity.onEnterWorld = function(self)
@@ -175,7 +159,7 @@ KBEngineLua.Entity.leaveWorld = function(self)
 	self.inWorld = false;
 	self.onLeaveWorld();
 	
-	Event.Brocast("onLeaveWorld", self);
+	KBEngineLua.Event.Brocast("onLeaveWorld", self);
 end
 
 KBEngineLua.Entity.onLeaveWorld = function(self)
@@ -199,12 +183,18 @@ end
 KBEngineLua.Entity.onLeaveSpace = function(self)
 end
 
-
 KBEngineLua.Entity.onUpdateVolatileData = function(self)
 end
-
 
 -- 对于玩家自身来说，它表示是否自己被其它玩家控制了；
 -- 对于其它entity来说，表示我本机是否控制了这个entity
 KBEngineLua.Entity.onControlled = function(self, isControlled_)
+end
+
+KBEngineLua.Entity.set_position = function(self, old)
+	KBEngineLua.Event.Brocast("set_position", self);
+end
+
+KBEngineLua.Entity.set_direction = function(self, old)
+	KBEngineLua.Event.Brocast("set_direction", self);
 end

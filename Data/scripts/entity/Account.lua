@@ -27,6 +27,13 @@ end
 
 function KBEngineLua.Account:onCreateAvatarResult(retcode, info)
 	print ("lj onCreateAvatarResult", retcode, info);
+	if (retcode == 0) then
+		dbid = info["dbid"];
+		self.avatars[dbid] = info;
+		table.insert(self.avatars["values"], info);
+	end
+
+	KBEngineLua.Event.Brocast("onCreateAvatarResult", retcode, info, self.avatars);
 end
 
 function KBEngineLua.Account:onRemoveAvatar(dbid)
@@ -35,12 +42,17 @@ end
 
 function KBEngineLua.Account:onReqAvatarList(infos)
 	print ("lj onReqAvatarList", infos);
+	self.avatars = infos;
+
+	KBEngineLua.Event.Brocast("onReqAvatarList", self.avatars);
 end
 
 function KBEngineLua.Account:reqCreateAvatar(roleType, name)
-	print ("lj reqCreateAvatar", roleType, name);
+	print ('lj reqCreateAvatar', roleType, name);
+	self:baseCall("reqCreateAvatar", roleType, name);
 end
 
 function KBEngineLua.Account:selectAvatarGame(dbid)
-	print ("lj selectAvatarGame", dbid);
+	print ('lj selectAvatarGame', dbid);
+	self:baseCall("selectAvatarGame", dbid);
 end

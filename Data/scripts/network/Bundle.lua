@@ -139,10 +139,9 @@ function KBEngineLua.Bundle:writeString(v)
 end
 
 function KBEngineLua.Bundle:writeStringToStream(v)
-	self:checkStream(string.len(v));
 	for i = 1, string.len(v) do
 		char = string.sub(v, i, i);
-		self.stream:WriteUByte(char);
+		self:writeUint8(string.byte(char));
 	end
 end
 

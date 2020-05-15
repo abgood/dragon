@@ -5,6 +5,8 @@ require "scripts/libs/Base"
 local game = require 'game.game'
 local libnetwork = require 'network.KBEngine'
 local login = require 'login.login'
+local scene = require 'scene.scene'
+local map = require 'map.map'
 
 
 function Start()
@@ -17,6 +19,8 @@ function Start()
 	game.init()
 	libnetwork.init()
 	login.init()
+	scene.init()
+	map.init()
 
 	SetupViewport()
 
@@ -60,8 +64,19 @@ end
 
 function installEvents()
 	libnetwork.Event.AddListener("onLoginSuccessfully", login.onLoginSuccessfully);
+	libnetwork.Event.AddListener("onReqAvatarList", login.onReqAvatarList);
+	libnetwork.Event.AddListener("onCreateAvatarResult", login.onCreateAvatarResult);
+
+	libnetwork.Event.AddListener("set_direction", scene.set_direction);
+	libnetwork.Event.AddListener("set_position", scene.set_position);
+	libnetwork.Event.AddListener("onEnterWorld", scene.onEnterWorld);
 end
 
 function uninstallEvents()
 	libnetwork.Event.RemoveListener("onLoginSuccessfully", login.onLoginSuccessfully);
+	libnetwork.Event.RemoveListener("onReqAvatarList", login.onReqAvatarList);
+
+	libnetwork.Event.RemoveListener("set_direction", scene.set_direction);
+	libnetwork.Event.RemoveListener("set_position", scene.set_position);
+	libnetwork.Event.RemoveListener("onEnterWorld", scene.onEnterWorld);
 end

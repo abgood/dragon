@@ -9,8 +9,8 @@ KBEngineLua.DATATYPE_UINT8 =
 		return stream:ReadByte();
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:WriteUByte(v);
+	addToStream = function(self, bundle, v)
+		bundle:writeUint8(v);
 	end,
 
 	parseDefaultValStr = function(self, v)
@@ -39,8 +39,8 @@ KBEngineLua.DATATYPE_UINT16 =
 		return stream:ReadUShort();
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:WriteUShort(v);
+	addToStream = function(self, bundle, v)
+		bundle:writeUint16(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -68,8 +68,8 @@ KBEngineLua.DATATYPE_UINT32 =
 		return stream:ReadUInt();
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:WriteUInt(v);
+	addToStream = function(self, bundle, v)
+		bundle:writeUint32(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -98,8 +98,8 @@ KBEngineLua.DATATYPE_UINT64 =
 		return stream:ReadUInt64();
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:WriteUInt64(v);
+	addToStream = function(self, bundle, v)
+		bundle:writeUint64(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -120,8 +120,8 @@ KBEngineLua.DATATYPE_INT8 =
 		return stream:ReadByte();
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:writeInt8(v);
+	addToStream = function(self, bundle, v)
+		bundle:writeInt8(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -149,8 +149,8 @@ KBEngineLua.DATATYPE_INT16 =
 		return stream:ReadShort();
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:WriteShort(v);
+	addToStream = function(self, bundle, v)
+		bundle:writeInt16(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -178,8 +178,8 @@ KBEngineLua.DATATYPE_INT32 =
 		return stream:ReadInt();
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:WriteInt(v);
+	addToStream = function(self, bundle, v)
+		bundle:writeInt32(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -208,8 +208,8 @@ KBEngineLua.DATATYPE_INT64 =
 		return stream:ReadInt64();
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:WriteInt64(v);
+	addToStream = function(self, bundle, v)
+		bundle:writeInt64(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -230,8 +230,8 @@ KBEngineLua.DATATYPE_FLOAT =
 		return stream:ReadFloat();
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:WriteFloat(v);
+	addToStream = function(self, bundle, v)
+		bundle:WriteFloat(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -252,8 +252,8 @@ KBEngineLua.DATATYPE_DOUBLE =
 		return stream:ReadDouble();
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:WriteDouble(v);
+	addToStream = function(self, bundle, v)
+		bundle:writeDouble(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -274,8 +274,8 @@ KBEngineLua.DATATYPE_STRING =
 		return stream:ReadString();
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:WriteString(v);
+	addToStream = function(self, bundle, v)
+		bundle:writeString(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -296,9 +296,9 @@ KBEngineLua.DATATYPE_VECTOR2 =
 		return Vector2(stream:ReadFloat(), stream:ReadFloat());
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:WriteFloat(v.x);
-		stream:WriteFloat(v.y);
+	addToStream = function(self, bundle, v)
+		bundle:writeFloat(v.x);
+		bundle:writeFloat(v.y);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -318,10 +318,10 @@ KBEngineLua.DATATYPE_VECTOR3 =
 		return Vector3(stream:ReadFloat(), stream:ReadFloat(), stream:ReadFloat());
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:WriteFloat(v.x);
-		stream:WriteFloat(v.y);
-		stream:WriteFloat(v.z);
+	addToStream = function(self, bundle, v)
+		bundle:writeFloat(v.x);
+		bundle:writeFloat(v.y);
+		bundle:writeFloat(v.z);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -342,11 +342,11 @@ KBEngineLua.DATATYPE_VECTOR4 =
 		return Vector4(stream:ReadFloat(), stream:ReadFloat(), stream:ReadFloat(), stream:ReadFloat());
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:WriteFloat(v.x);
-		stream:WriteFloat(v.y);
-		stream:WriteFloat(v.z);
-		stream:WriteFloat(v.w);
+	addToStream = function(self, bundle, v)
+		bundle:writeFloat(v.x);
+		bundle:writeFloat(v.y);
+		bundle:writeFloat(v.z);
+		bundle:writeFloat(v.w);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -368,8 +368,8 @@ KBEngineLua.DATATYPE_PYTHON =
 		return KBEngineLua.readBlob(stream);
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:writeBlob(v);
+	addToStream = function(self, bundle, v)
+		bundle:writeBlob(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -387,11 +387,11 @@ KBEngineLua.DATATYPE_UNICODE =
 	end,
 
 	createFromStream = function(self, stream)
-		return KBELuaUtil.ByteToUtf8(KBEngineLua.readBlob(stream));
+		return KBEngineLua.readBlob(stream);
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:writeBlob(KBELuaUtil.Utf8ToByte(v));
+	addToStream = function(self, bundle, v)
+		bundle:writeBlob(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -414,7 +414,7 @@ KBEngineLua.DATATYPE_ENTITYCALL =
 	createFromStream = function(self, stream)
 	end,
 	
-	addToStream = function(self, stream, v)
+	addToStream = function(self, bundle, v)
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -435,8 +435,8 @@ KBEngineLua.DATATYPE_BLOB =
 		return KBEngineLua.readBlob(stream);
 	end,
 	
-	addToStream = function(self, stream, v)
-		stream:writeBlob(v);
+	addToStream = function(self, bundle, v)
+		bundle:writeBlob(v);
 	end,
 	
 	parseDefaultValStr = function(self, v)
@@ -475,11 +475,11 @@ KBEngineLua.DATATYPE_ARRAY.createFromStream = function(self, stream)
 	return datas;
 end
 	
-KBEngineLua.DATATYPE_ARRAY.addToStream = function(self, stream, v)
+KBEngineLua.DATATYPE_ARRAY.addToStream = function(self, bundle, v)
 	stream:writeUint32(#v);
 	for k,va in pairs(v)
 	do
-		self._type:addToStream(stream, va);
+		self._type:addToStream(bundle, va);
 	end
 end
 
@@ -527,9 +527,9 @@ KBEngineLua.DATATYPE_FIXED_DICT.createFromStream = function(self, stream)
 	return datas;
 end
 
-KBEngineLua.DATATYPE_FIXED_DICT.addToStream = function(self, stream, v)
+KBEngineLua.DATATYPE_FIXED_DICT.addToStream = function(self, bundle, v)
 	for i, key in ipairs(self.dictKeys) do
-		self.dicttype[key]:addToStream(stream, v[key]);
+		self.dicttype[key]:addToStream(bundle, v[key]);
 	end
 end
 

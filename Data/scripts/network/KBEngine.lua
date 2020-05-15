@@ -9,6 +9,7 @@ require "scripts/network/EntityCall"
 require "scripts/network/Entity"
 require "scripts/network/PersistentInfos"
 require "scripts/network/Dbg"
+require "scripts/network/LuaUtil"
 require "scripts/libs/Base"
 
 require "scripts/entity/Account"
@@ -78,7 +79,7 @@ KBEngineLua._clientdatas = VectorBuffer();
 KBEngineLua._encryptedKey = "";
 
 -- 服务端与客户端的版本号以及协议MD5
-KBEngineLua.clientVersion = "2.5.8";
+KBEngineLua.clientVersion = "1.3.12";
 KBEngineLua.clientScriptVersion = "0.1.0";
 KBEngineLua.serverVersion = "";
 KBEngineLua.serverScriptVersion = "";
@@ -117,6 +118,9 @@ KBEngineLua.networkPacket = VectorBuffer();
 KBEngineLua.networkDataLength = 0;
 -- 单个网络数据包长度
 KBEngineLua.networkMsgLen = 0;
+
+-- 按照标准，每个客户端部分都应该包含这个属性
+KBEngineLua.component = "client"; 
 
 
 
@@ -300,7 +304,7 @@ KBEngineLua.createDataTypeFromStream = function(stream, canprint)
 	end
 		
 	if(canprint) then
-		logInfo("KBEngineApp::Client_onImportClientEntityDef: importAlias(" .. name .. ":" .. valname .. ")!");
+		logInfo("KBEngineApp::Client_onImportClientEntityDef: importAlias(" .. name .. ":" .. valname .. ", utype:" .. utype .. ")!");
 	end
 	
 	if(name == "FIXED_DICT") then
@@ -731,7 +735,8 @@ KBEngineLua.onUpdatePropertys_ = function(eid, stream)
 	
 	local currModule = KBEngineLua.moduledefs[entity.className];
 	local pdatas = currModule.propertys;
-	while(stream:length() > 0) do
+	while(not stream:IsEof())
+	do
 		local utype = 0;
 		if(currModule.usePropertyDescrAlias) then
 			utype = stream:ReadUByte();
@@ -745,17 +750,19 @@ KBEngineLua.onUpdatePropertys_ = function(eid, stream)
 		local val = propertydata[5]:createFromStream(stream);
 		local oldval = entity[propertydata[3]];
 		
-		--logInfo("KBEngineApp::Client_onUpdatePropertys: " .. entity.className .. "(id=" .. eid  .. " " .. propertydata[3]);
+		logInfo("KBEngineApp::Client_onUpdatePropertys: " .. entity.className .. "(id=" .. eid  .. ", " .. propertydata[3] .. ")!");
 		
 		entity[propertydata[3]] = val;
 		if(setmethod ~= nil) then
 
 			-- base类属性或者进入世界后cell类属性会触发set_*方法
 			if(flags == 0x00000020 or flags == 0x00000040) then
+				print ('lj a', entity.inited);
 				if(entity.inited) then
 					setmethod(entity, oldval);
 				end
 			else
+				print ("lj b", entity.inWorld);
 				if(entity.inWorld) then
 					setmethod(entity, oldval);
 				end
@@ -828,7 +835,7 @@ KBEngineLua.Client_onEntityEnterWorld = function(stream)
 	
 	local isOnGround = 1;
 	
-	if(stream:length() > 0) then
+	if(stream.size > 0) then
 		isOnGround = stream:ReadByte();
 	end
 	
@@ -967,7 +974,7 @@ KBEngineLua.Client_onEntityEnterSpace = function(stream)
 	KBEngineLua.spaceID = stream:ReadUInt();
 	local isOnGround = true;
 	
-	if(stream:length() > 0) then
+	if(stream.size > 0) then
 		isOnGround = stream:ReadByte();
 	end
 	
@@ -1062,7 +1069,7 @@ KBEngineLua.updatePlayerToServer = function()
     this._lastUpdateToServerTime = now - (span - 0.05);
 
     --logInfo(player.position.x .. " " .. player.position.y);
-	if(Vector3.Distance(player._entityLastLocalPos, player.position) > 0.001 or Vector3.Distance(player._entityLastLocalDir, player.direction) > 0.001) then
+	if(Vector3.Length(player._entityLastLocalPos, player.position) > 0.001 or Vector3.Length(player._entityLastLocalDir, player.direction) > 0.001) then
 	
 		-- 记录玩家最后一次上报位置时自身当前的位置
 		player._entityLastLocalPos.x = player.position.x;
@@ -1091,8 +1098,8 @@ KBEngineLua.updatePlayerToServer = function()
 		position = entity.position;
 		direction = entity.direction;
 
-		posHasChanged = Vector3.Distance(entity._entityLastLocalPos, position) > 0.001;
-		dirHasChanged = Vector3.Distance(entity._entityLastLocalDir, direction) > 0.001;
+		posHasChanged = Vector3.Length(entity._entityLastLocalPos, position) > 0.001;
+		dirHasChanged = Vector3.Length(entity._entityLastLocalDir, direction) > 0.001;
 
 		if (posHasChanged or dirHasChanged) then
 			entity._entityLastLocalPos = position;
@@ -1184,7 +1191,8 @@ KBEngineLua.Client_initSpaceData = function(stream)
 	KBEngineLua.clearSpace(false);
 	
 	KBEngineLua.spaceID = stream:ReadInt();
-	while(stream:length() > 0) do
+	while(not stream:IsEof())
+	do
 		local key = stream:ReadString();
 		local value = stream:ReadString();
 		KBEngineLua.Client_setSpaceData(KBEngineLua.spaceID, key, value);
@@ -1211,7 +1219,7 @@ KBEngineLua.Client_delSpaceData = function(spaceID, key)
 	logInfo("KBEngineApp::Client_delSpaceData: spaceID(" .. spaceID .. "), key(" .. key .. ")!");
 	
 	KBEngineLua.spacedata[key] = nil;
-	KBEngine.Event.fire("onDelSpaceData", spaceID, key);
+	KBEngineLua.Event.Brocast("onDelSpaceData", spaceID, key);
 end
 
 KBEngineLua.Client_getSpaceData = function(spaceID, key)
@@ -1249,9 +1257,9 @@ KBEngineLua.Client_onUpdateBasePosXZ = function(x, z)
 end
 
 KBEngineLua.Client_onUpdateBaseDir = function(stream)
-	local x = stream:readFloat();
-	local y = stream:readFloat();
-	local z = stream:readFloat();
+	local x = stream:ReadFloat();
+	local y = stream:ReadFloat();
+	local z = stream:ReadFloat();
 
 	local entity = this.player();
 	if (entity ~= nil and entity.isControlled) then
@@ -1282,12 +1290,12 @@ KBEngineLua.Client_onSetEntityPosAndDir = function(stream)
 		return;
 	end
 	
-	entity.position.x = stream:readFloat();
-	entity.position.y = stream:readFloat();
-	entity.position.z = stream:readFloat();
-	entity.direction.x = stream:readFloat();
-	entity.direction.y = stream:readFloat();
-	entity.direction.z = stream:readFloat();
+	entity.position.x = stream:ReadFloat();
+	entity.position.y = stream:ReadFloat();
+	entity.position.z = stream:ReadFloat();
+	entity.direction.x = stream:ReadFloat();
+	entity.direction.y = stream:ReadFloat();
+	entity.direction.z = stream:ReadFloat();
 	
 	-- 记录玩家最后一次上报位置时自身当前的位置
 	entity._entityLastLocalPos.x = entity.position.x;
@@ -2045,6 +2053,10 @@ end
 
 
 KBEngineLua.sendTick = function()
+	if(not this._networkInterface.serverConnection) then
+		return;
+	end
+
 	if(not this._networkInterface.serverConnection:IsConnected()) then
 		return;
 	end
