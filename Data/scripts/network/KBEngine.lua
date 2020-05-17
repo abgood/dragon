@@ -23,7 +23,7 @@ KBEngineLua.Event = require "scripts/network/events"
 
 
 -----------------可配置信息---------------
-KBEngineLua.ip = "192.168.56.101";
+KBEngineLua.ip = "192.168.8.123";
 KBEngineLua.port = "20013";
 -- Mobile(Phone, Pad)	= 1,
 -- Windows Application program	= 2,
@@ -139,7 +139,7 @@ KBEngineLua.int82angle = function(angle, half)
 end
 
 KBEngineLua.init = function()
-	print("network init")
+	logInfo("network init");
 	this._networkInterface = network;
 	this.installEvents()
 end
@@ -163,7 +163,7 @@ function HandleNetworkMessage(eventType, eventData)
 		this.networkDataLength = msglen + msg.position;
 		this.networkPacket:Clear();
 
-		logInfo("KBEngineLua network data recv [S2C], msgid: " .. msgid .. ", length: " .. this.networkDataLength);
+		logDbg("KBEngineLua network data recv [S2C], msgid: " .. msgid .. ", length: " .. this.networkDataLength);
 	end
 
 	msg:Seek(0);
@@ -304,7 +304,7 @@ KBEngineLua.createDataTypeFromStream = function(stream, canprint)
 	end
 		
 	if(canprint) then
-		logInfo("KBEngineApp::Client_onImportClientEntityDef: importAlias(" .. name .. ":" .. valname .. ", utype:" .. utype .. ")!");
+		logDbg("KBEngineApp::Client_onImportClientEntityDef: importAlias(" .. name .. ":" .. valname .. ", utype:" .. utype .. ")!");
 	end
 	
 	if(name == "FIXED_DICT") then
@@ -356,7 +356,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 		local base_methodsize = stream:ReadUShort();
 		local cell_methodsize = stream:ReadUShort();
 		
-		logInfo("KBEngineApp::Client_onImportClientEntityDef: import(" .. scriptmodule_name .. "), propertys(" .. propertysize .. "), " ..
+		logDbg("KBEngineApp::Client_onImportClientEntityDef: import(" .. scriptmodule_name .. "), propertys(" .. propertysize .. "), " ..
 				"clientMethods(" .. methodsize .. "), baseMethods(" .. base_methodsize .. "), cellMethods(" .. cell_methodsize .. ")~");
 		
 		KBEngineLua.moduledefs[scriptmodule_name] = {};
@@ -401,7 +401,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 				currModuleDefs["usePropertyDescrAlias"] = false;
 			end
 			
-			logInfo("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), property(" .. name .. "/" .. properUtype .. ").");
+			logDbg("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), property(" .. name .. "/" .. properUtype .. ").");
 		end
 		while(methodsize > 0)
 		do
@@ -430,7 +430,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 				currModuleDefs["useMethodDescrAlias"] = false;
 			end
 			
-			logInfo("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), method(" .. name .. ").");
+			logDbg("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), method(" .. name .. ").");
 		end
 
 		while(base_methodsize > 0)
@@ -450,7 +450,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 			end
 			
 			self_base_methods[name] = {methodUtype, aliasID, name, args};
-			logInfo("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), base_method(" .. name .. ").");
+			logDbg("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), base_method(" .. name .. ").");
 		end
 		
 		while(cell_methodsize > 0)
@@ -470,12 +470,12 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 			end
 			
 			self_cell_methods[name] = {methodUtype, aliasID, name, args};
-			logInfo("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), cell_method(" .. name .. ").");
+			logDbg("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), cell_method(" .. name .. ").");
 		end
 		
 		defmethod = KBEngineLua[scriptmodule_name];
 		if defmethod == nil then
-			logInfo("KBEngineApp::Client_onImportClientEntityDef: module(" .. scriptmodule_name .. ") not found~");
+			logDbg("KBEngineApp::Client_onImportClientEntityDef: module(" .. scriptmodule_name .. ") not found~");
 		end
 		
 		for k, value in pairs(currModuleDefs.propertys) do
@@ -540,9 +540,9 @@ KBEngineLua.onImportClientMessages = function( stream )
 		if isClientMethod then
 			handler = KBEngineLua[msgname];
 			if handler == nil then
-				logInfo("KBEngineApp::onImportClientMessages[" .. KBEngineLua.currserver .. "]: interface(" .. msgname .. "/" .. msgid .. ") no implement!");
+				logDbg("KBEngineApp::onImportClientMessages[" .. KBEngineLua.currserver .. "]: interface(" .. msgname .. "/" .. msgid .. ") no implement!");
 			else
-				logInfo("KBEngineApp::onImportClientMessages: import(" .. msgname .. "/" .. msgid .. ") successfully!");
+				logDbg("KBEngineApp::onImportClientMessages: import(" .. msgname .. "/" .. msgid .. ") successfully!");
 			end
 		end
 	
@@ -1779,7 +1779,7 @@ KBEngineLua.Client_onLoginSuccessfully = function(stream)
 			this.baseappIP .. ":" .. this.baseappPort .. "), datas(" .. string.len(this._serverdatas) .. ")!");
 	
 	-- lj test
-	this.baseappIP = "192.168.56.101";
+	this.baseappIP = "192.168.8.123";
 	this.currstate = "loginbaseapp";
 	this.login_baseapp(true);
 end

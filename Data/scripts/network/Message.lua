@@ -45,7 +45,7 @@ end
 	
 function KBEngineLua.Message:handleMessage(msgstream)
 	if self.handler == nil then
-		logInfo("KBEngine.Message::handleMessage: interface(" .. self.name .. "/" .. self.id .. ") no implement!");
+		logDbg("KBEngine.Message::handleMessage: interface(" .. self.name .. "/" .. self.id .. ") no implement!");
 		return;
 	end
 
@@ -124,7 +124,7 @@ local reader = KBEngineLua.MessageReader;
 
 function KBEngineLua.MessageReader.process(packet)
 	length = packet.size;
-	logInfo("KBEngineLua.MessageReader.process: recv packet size: " .. length);
+	logDbg("KBEngineLua.MessageReader.process: recv packet size: " .. length);
 
 	while(length > 0 and reader.expectSize > 0)
 	do

@@ -22,10 +22,7 @@ function mt:get_name()
 	return self.name
 end
 
-
-
 function game.init()
-	print("game init")
 end
 
 return game

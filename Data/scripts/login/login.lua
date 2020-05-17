@@ -20,26 +20,24 @@ mt.name = 'login'
 
 
 function login.init()
-	print("login init")
+	logInfo(login:get_type() .. " init");
 	createLoginUI()
 end
 
 function login.onLoginSuccessfully()
 	logInfo("Login is successfully!(登陆成功!)");
 
+	local enterUI = ui:LoadLayout(cache:GetResource("XMLFile", "UI/login/enter.xml"))
+	ui.root:AddChild(enterUI)
+
 	showLoginUI(false);
-
-    local enterUI = ui:LoadLayout(cache:GetResource("XMLFile", "UI/login/enter.xml"))
-    ui.root:AddChild(enterUI)
-
-	-- showEnterUI(true);
+	showEnterUI(true);
 
 	coroutine.start(setbar)
 end
 
 function login.onReqAvatarList(avatars)
 	value = avatars["values"];
-	logInfo("login.onReqAvatarList num: " .. #value);
 
 	if (#value <= 0) then
 		showCreatePlayerUI(true)
@@ -74,30 +72,30 @@ function setbar()
 end
 
 function createLoginUI()
-	print("create login ui")
-    local style = cache:GetResource("XMLFile", "UI/DefaultStyle.xml")
-    ui.root.defaultStyle = style
-
-    local cursor = ui.root:CreateChild("Cursor")
-    cursor:SetStyleAuto()
-    ui.cursor = cursor
-    cursor:SetPosition(graphics.width / 2, graphics.height / 2)
-
-    local layoutRoot = ui:LoadLayout(cache:GetResource("XMLFile", "UI/login/login.xml"))
-    ui.root:AddChild(layoutRoot)
+	logInfo("show login ui");
+	local style = cache:GetResource("XMLFile", "UI/DefaultStyle.xml")
+	ui.root.defaultStyle = style
+	
+	local cursor = ui.root:CreateChild("Cursor")
+	cursor:SetStyleAuto()
+	ui.cursor = cursor
+	cursor:SetPosition(graphics.width / 2, graphics.height / 2)
+	
+	local layoutRoot = ui:LoadLayout(cache:GetResource("XMLFile", "UI/login/login.xml"))
+	ui.root:AddChild(layoutRoot)
 
 	showLoginUI(true)
 
     local pawdEdit = layoutRoot:GetChild("pawd_edit", true)
 	pawdEdit.echoCharacter = 42
 
-    local button = layoutRoot:GetChild("loginBtn", true)
-    if button ~= nil then
-        SubscribeToEvent(button, "Released", "requestLogin")
-    end
+	local button = layoutRoot:GetChild("loginBtn", true)
+	if button ~= nil then
+	    SubscribeToEvent(button, "Released", "requestLogin")
+	end
 
-	showLoginUI(false)
-	libnetwork.login("119", "456", "789")
+	-- lj test
+	libnetwork.login("123", "456", "789");
 end
 
 function showLoginUI(flag)
@@ -115,19 +113,19 @@ function showEnterUI(flag)
 end
 
 function requestLogin(eventType, eventData)
-	print ("request login");
-	layoutRoot = ui.root:GetChild("layout")
+	local layoutRoot = ui.root:GetChild("loginUI")
     local userEdit = layoutRoot:GetChild("user_edit", true)
     local pawdEdit = layoutRoot:GetChild("pawd_edit", true)
-	print ("lj input", userEdit.text, pawdEdit.text)
+
 	user = userEdit.text;
 	pawd = pawdEdit.text;
-	libnetwork.login(user, pawd)
+	logDbg("request login: " .. "username(" .. user .. "), " .. "password(" .. pawd .. ")")
+	libnetwork.login(user, pawd, "kbengine_urho3d_demo");
 end
 
 function changeScrollBar(eventType, eventData)
-    local enterUI = eventData["Element"]:GetPtr("UIElement")
-    local value = eventData["Value"]:GetFloat()
+	local enterUI = eventData["Element"]:GetPtr("UIElement")
+	local value = eventData["Value"]:GetFloat()
 
 	if (value == enterUI.range) then
 		showEnterUI(false);

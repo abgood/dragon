@@ -1,5 +1,6 @@
 
 require "scripts/network/Entity"
+require "scripts/network/Dbg"
 
 
 KBEngineLua.Account = {}
@@ -17,7 +18,7 @@ function KBEngineLua.Account:New()
 end
 
 function KBEngineLua.Account:__init__()
-	print ("lj Account __init__");
+	logDbg("KBEAccount::__init__");
 	self.avatars = {};
 
 	KBEngineLua.Event.Brocast("onLoginSuccessfully", KBEngineLua.entity_uuid, KBEngineLua.entity_id, KBEngineLua);
@@ -26,7 +27,7 @@ function KBEngineLua.Account:__init__()
 end
 
 function KBEngineLua.Account:onCreateAvatarResult(retcode, info)
-	print ("lj onCreateAvatarResult", retcode, info);
+	logDbg("KBEAccount::onCreateAvatarResult: " .. retcode);
 	if (retcode == 0) then
 		dbid = info["dbid"];
 		self.avatars[dbid] = info;
@@ -41,8 +42,14 @@ function KBEngineLua.Account:onRemoveAvatar(dbid)
 end
 
 function KBEngineLua.Account:onReqAvatarList(infos)
-	print ("lj onReqAvatarList", infos);
+	logDbg("KBEAccount::onReqAvatarList");
 	self.avatars = infos;
+
+	logDbg("KBEAccount::onReqAvatarList: avatarsize = " .. #self.avatars["values"]);
+
+	for k, v in ipairs(self.avatars["values"]) do
+		logDbg("KBEAccount::onReqAvatarList: name" .. k .. " = (" .. v["name"] .. ")");
+	end
 
 	KBEngineLua.Event.Brocast("onReqAvatarList", self.avatars);
 end

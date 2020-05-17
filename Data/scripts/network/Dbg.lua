@@ -49,23 +49,23 @@ end
 --debug输出日志--
 function logDbg(str)
     -- Dbg.DEBUG_MSG(str);
-    log:Write(LOG_DEBUG, str)
+	log:Write(LOG_DEBUG, "S_DBG: " .. str)
 end
 
 --输出日志--
 function logInfo(str)
     -- Dbg.INFO_MSG(str);
-    log:Write(LOG_INFO, str)
+	log:Write(LOG_INFO, "S_INFO: " .. str)
 end
 
 --错误日志--
 function logError(str) 
     -- Dbg.ERROR_MSG(str);
-    log:Write(LOG_ERROR, str)
+    log:Write(LOG_ERROR, "S_ERR: " .. str)
 end
 
 --警告日志--
 function logWarn(str) 
     -- Dbg.WARNING_MSG(str);
-    log:Write(LOG_WARNING, str)
+    log:Write(LOG_WARNING, "S_WARN: " .. str)
 end

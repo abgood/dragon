@@ -60,14 +60,14 @@ end
 function KBEngineLua.Bundle:send()
 	local networkInterface = KBEngineLua._networkInterface;
 	
-	logInfo("KBEngineLua network data send [C2S], msgid: " .. self.msgtype.id .. ", length: " .. self.messageLength);
+	logDbg("KBEngineLua network data send [C2S], msgid: " .. self.msgtype.id .. ", length: " .. self.messageLength);
 
 	self:fini(true);
 	
 	if(networkInterface.serverConnection:IsConnected()) then
 		for i = 1, #self.streamList, 1 do
 			self.stream = self.streamList[i];
-			logInfo("Bundle::send: packet length: " .. self.stream.size);
+			logDbg("Bundle::send: packet length: " .. self.stream.size);
 			networkInterface.serverConnection:SendMessage(0, true, true, self.stream);
 		end
 	else

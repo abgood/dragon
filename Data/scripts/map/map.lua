@@ -21,7 +21,7 @@ mt.entities = {}
 
 
 function map.init()
-	print("map init")
+	logInfo(map:get_type() .. " init");
 end
 
 
