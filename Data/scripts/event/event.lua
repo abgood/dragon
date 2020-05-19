@@ -33,6 +33,7 @@ function installEvents()
 	libnetwork.Event.AddListener("set_direction", scene.set_direction);
 	libnetwork.Event.AddListener("set_position", scene.set_position);
 	libnetwork.Event.AddListener("onEnterWorld", scene.onEnterWorld);
+	libnetwork.Event.AddListener("addSpaceGeometryMapping", scene.addSpaceGeometryMapping);
 end
 
 function event.uninstallEvents()
@@ -42,6 +43,7 @@ function event.uninstallEvents()
 	libnetwork.Event.RemoveListener("set_direction", scene.set_direction);
 	libnetwork.Event.RemoveListener("set_position", scene.set_position);
 	libnetwork.Event.RemoveListener("onEnterWorld", scene.onEnterWorld);
+	libnetwork.Event.RemoveListener("addSpaceGeometryMapping", scene.addSpaceGeometryMapping);
 end
 
 

@@ -56,5 +56,9 @@ function scene.onEnterWorld(entity)
 	print ("lj scene onEnterWorld");
 end
 
+function scene.addSpaceGeometryMapping(resPath)
+	print ("lj scene addSpaceGeometryMapping", resPath);
+end
+
 
 return scene

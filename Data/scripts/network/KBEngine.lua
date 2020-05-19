@@ -23,7 +23,7 @@ KBEngineLua.Event = require "scripts/network/events"
 
 
 -----------------可配置信息---------------
-KBEngineLua.ip = "192.168.8.123";
+KBEngineLua.ip = "192.168.56.101";
 KBEngineLua.port = "20013";
 -- Mobile(Phone, Pad)	= 1,
 -- Windows Application program	= 2,
@@ -721,7 +721,7 @@ KBEngineLua.onUpdatePropertys_ = function(eid, stream)
 	if(entity == nil) then
 		local entityMessage = KBEngineLua.bufferedCreateEntityMessage[eid];
 		if(entityMessage ~= nil) then
-			logInfo("KBEngineApp::Client_onUpdatePropertys: entity(" .. eid .. ") not found!");
+			logError("KBEngineApp::Client_onUpdatePropertys: entity(" .. eid .. ") not found!");
 			return;
 		end
 		
@@ -750,19 +750,17 @@ KBEngineLua.onUpdatePropertys_ = function(eid, stream)
 		local val = propertydata[5]:createFromStream(stream);
 		local oldval = entity[propertydata[3]];
 		
-		logInfo("KBEngineApp::Client_onUpdatePropertys: " .. entity.className .. "(id=" .. eid  .. ", " .. propertydata[3] .. ")!");
+		logDbg("KBEngineApp::Client_onUpdatePropertys: " .. entity.className .. "(id=" .. eid  .. ", " .. propertydata[3] .. ")!");
 		
 		entity[propertydata[3]] = val;
 		if(setmethod ~= nil) then
 
 			-- base类属性或者进入世界后cell类属性会触发set_*方法
 			if(flags == 0x00000020 or flags == 0x00000040) then
-				print ('lj a', entity.inited);
 				if(entity.inited) then
 					setmethod(entity, oldval);
 				end
 			else
-				print ("lj b", entity.inWorld);
 				if(entity.inWorld) then
 					setmethod(entity, oldval);
 				end
@@ -1139,7 +1137,7 @@ end
 
 KBEngineLua.addSpaceGeometryMapping = function(spaceID, respath)
 
-	logInfo("KBEngineApp::addSpaceGeometryMapping: spaceID(" .. spaceID .. "), respath(" .. respath .. ")!");
+	logDbg("KBEngineApp::addSpaceGeometryMapping: spaceID(" .. spaceID .. "), respath(" .. respath .. ")!");
 	
 	KBEngineLua.spaceID = spaceID;
 	KBEngineLua.spaceResPath = respath;
@@ -1203,7 +1201,7 @@ end
 
 KBEngineLua.Client_setSpaceData = function(spaceID, key, value)
 
-	logInfo("KBEngineApp::Client_setSpaceData: spaceID(" .. spaceID .. "), key(" .. key .. "), value(" .. value .. ")!");
+	logDbg("KBEngineApp::Client_setSpaceData: spaceID(" .. spaceID .. "), key(" .. key .. "), value(" .. value .. ")!");
 	
 	KBEngineLua.spacedata[key] = value;
 	
@@ -1626,6 +1624,8 @@ KBEngineLua._updateVolatileData = function(entityID, x, y, z, yaw, pitch, roll, 
 end
 
 KBEngineLua.login = function( username, password, data )
+	this.Destroy();
+
 	KBEngineLua.username = username;
 	KBEngineLua.password = password;
     KBEngineLua._clientdatas = data;
@@ -1636,7 +1636,6 @@ end
 --登录到服务端(loginapp), 登录成功后还必须登录到网关(baseapp)登录流程才算完毕
 KBEngineLua.login_loginapp = function( noconnect )
 	if noconnect then
-		this.Destroy();
 		this._networkInterface:Connect(this.ip, this.port, scene_);
 
 		local serverConnection = this._networkInterface:GetServerConnection();
@@ -1645,8 +1644,6 @@ KBEngineLua.login_loginapp = function( noconnect )
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Loginapp_login"]);
 		bundle:writeInt8(this.clientType);
-		-- lj test
-		this._clientdatas = "789";
 		bundle:writeBlob(this._clientdatas);
 		bundle:writeString(this.username);
 		bundle:writeString(this.password);
@@ -1779,7 +1776,7 @@ KBEngineLua.Client_onLoginSuccessfully = function(stream)
 			this.baseappIP .. ":" .. this.baseappPort .. "), datas(" .. string.len(this._serverdatas) .. ")!");
 	
 	-- lj test
-	this.baseappIP = "192.168.8.123";
+	this.baseappIP = "192.168.56.101";
 	this.currstate = "loginbaseapp";
 	this.login_baseapp(true);
 end

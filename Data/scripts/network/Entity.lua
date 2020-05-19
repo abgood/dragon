@@ -168,7 +168,10 @@ end
 KBEngineLua.Entity.enterSpace = function(self)
 	logInfo(self.className .. '::enterSpace: ' .. self.id); 
 	self.onEnterSpace();
-	--KBEngine.Event.fire("onEnterSpace", self);
+	KBEngineLua.Event.Brocast("onEnterSpace", self);
+
+	KBEngineLua.Event.Brocast("set_position", self);
+	KBEngineLua.Event.Brocast("set_direction", self);
 end
 
 KBEngineLua.Entity.onEnterSpace = function(self)
@@ -177,7 +180,7 @@ end
 KBEngineLua.Entity.leaveSpace = function(self)
 	logInfo(self.className .. '::leaveSpace: ' .. self.id); 
 	self.onLeaveSpace();
-	--KBEngine.Event.fire("onLeaveSpace", self);
+	KBEngineLua.Event.Brocast("onLeaveSpace", self);
 end
 
 KBEngineLua.Entity.onLeaveSpace = function(self)

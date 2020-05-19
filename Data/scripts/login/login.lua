@@ -47,7 +47,7 @@ function login.onReqAvatarList(avatars)
 end
 
 function login.onCreateAvatarResult(retcode, info, avatars)
-	logInfo("login.onCreateAvatarResult: retcode(" .. info["dbid"] .. "), " .. "name(" .. info["name"] .. "), " .. "roleType(" .. info["roleType"] .. "), " .. "level(" .. info["level"] .. "), ");
+	logDbg("login.onCreateAvatarResult: retcode(" .. info["dbid"] .. "), " .. "name(" .. info["name"] .. "), " .. "roleType(" .. info["roleType"] .. "), " .. "level(" .. info["level"] .. "), ");
 	if (retcode == 0) then
 		showCreatePlayerUI(false)
 		libnetwork.player():selectAvatarGame(info["dbid"]);
@@ -95,7 +95,7 @@ function createLoginUI()
 	end
 
 	-- lj test
-	libnetwork.login("123", "456", "789");
+	libnetwork.login("6", "456", "kbengine_urho3d_demo");
 end
 
 function showLoginUI(flag)
