@@ -2,6 +2,9 @@
 package.path = package.path .. fileSystem:GetCurrentDir() .. [[Data/scripts/?.lua]]
 
 scene_ = nil
+cameraNode = nil
+tileMapNode = nil
+
 useMouseMode_ = MM_ABSOLUTE
 
 function BaseStart()

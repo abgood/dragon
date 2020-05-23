@@ -1,6 +1,7 @@
 require "scripts/network/Dbg"
 
 local game = require 'game.game'
+local scene = require 'scene.scene'
 local libnetwork = require 'network.KBEngine'
 
 local login = {}
@@ -51,6 +52,8 @@ function login.onCreateAvatarResult(retcode, info, avatars)
 	if (retcode == 0) then
 		showCreatePlayerUI(false)
 		libnetwork.player():selectAvatarGame(info["dbid"]);
+
+		scene.enter_scene();
 	end
 end
 
@@ -61,6 +64,10 @@ function showCreatePlayerUI(flag)
 end
 
 function showPlayerInfoUI(info)
+	logDbg("show player info, dbid:(" .. info["dbid"] .. "), name:(" .. info["name"] .. ")");
+	libnetwork.player():selectAvatarGame(info["dbid"]);
+
+	scene.enter_scene();
 end
 
 function setbar()
@@ -95,7 +102,7 @@ function createLoginUI()
 	end
 
 	-- lj test
-	libnetwork.login("6", "456", "kbengine_urho3d_demo");
+	libnetwork.login("7", "456", "kbengine_urho3d_demo");
 end
 
 function showLoginUI(flag)
