@@ -23,6 +23,22 @@
 	<component type="Renderer2D" id="6" />
 	<node id="2">
 		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Camera" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="1 13 -10" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="Camera" id="4">
+			<attribute name="Near Clip" value="0" />
+			<attribute name="Aspect Ratio" value="1.33333" />
+			<attribute name="Orthographic" value="true" />
+			<attribute name="Orthographic Size" value="6" />
+			<attribute name="Zoom" value="1.25" />
+		</component>
+	</node>
+	<node id="3">
+		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="TileMap" />
 		<attribute name="Tags" />
 		<attribute name="Position" value="0 0 0" />
@@ -33,6 +49,7 @@
 			<attribute name="Tmx File" value="TmxFile2D;Urho2D/Tilesets/atrium.tmx" />
 		</component>
 	</node>
+	<!--
 	<node id="1247">
 		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="Imp" />
@@ -59,7 +76,6 @@
 			<attribute name="Friction" value="0" />
 			<attribute name="Restitution" value="0.1" />
 		</component>
-		<!--
 		<component type="LuaScriptInstance" id="1207">
 			<attribute name="Script Object Type" value="Character2D" />
 			<attribute name="remainingLifes" value="3" />
@@ -69,6 +85,6 @@
 			<attribute name="timer" value="0" />
 			<attribute name="wounded" value="false" />
 		</component>
-		-->
 	</node>
+	-->
 </scene>

@@ -102,7 +102,7 @@ function createLoginUI()
 	end
 
 	-- lj test
-	libnetwork.login("7", "456", "kbengine_urho3d_demo");
+	libnetwork.login("1", "456", "kbengine_urho3d_demo");
 end
 
 function showLoginUI(flag)

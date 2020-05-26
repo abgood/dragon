@@ -18,6 +18,8 @@ require "scripts/entity/Monster"
 require "scripts/entity/NPC"
 require "scripts/entity/Gate"
 
+require "bit"
+
 
 KBEngineLua.Event = require "scripts/network/events"
 
@@ -577,6 +579,18 @@ KBEngineLua.readBlob = function(stream)
 	datas:SetData(stream, size);
 
 	return datas:ReadString();
+end
+
+KBEngineLua.readPackXZ = function(stream)
+	v1 = stream:ReadUByte();
+	v2 = stream:ReadUByte();
+	v3 = stream:ReadUByte();
+	print ("lj xz", v1, v2, v3);
+end
+
+KBEngineLua.readPackY = function(stream)
+	v = stream:ReadUShort();
+	print ("lj y", v);
 end
 
 KBEngineLua.onImportServerErrorsDescr = function(stream)
@@ -1379,7 +1393,7 @@ KBEngineLua.Client_onUpdateData_xz = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
+	local xz = this.readPackXZ(stream);
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 1);
 end
@@ -1388,7 +1402,7 @@ KBEngineLua.Client_onUpdateData_xz_ypr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
+	local xz = this.readPackXZ(stream);
 
 	local y = stream:ReadByte();
 	local p = stream:ReadByte();
@@ -1401,7 +1415,7 @@ KBEngineLua.Client_onUpdateData_xz_yp = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
+	local xz = this.readPackXZ(stream);
 
 	local y = stream:ReadByte();
 	local p = stream:ReadByte();
@@ -1413,7 +1427,7 @@ KBEngineLua.Client_onUpdateData_xz_yr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
+	local xz = this.readPackXZ(stream);
 
 	local y = stream:ReadByte();
 	local r = stream:ReadByte();
@@ -1425,7 +1439,7 @@ KBEngineLua.Client_onUpdateData_xz_pr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
+	local xz = this.readPackXZ(stream);
 
 	local p = stream:ReadByte();
 	local r = stream:ReadByte();
@@ -1437,7 +1451,7 @@ KBEngineLua.Client_onUpdateData_xz_y = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
+	local xz = this.readPackXZ(stream);
 
 	local y = stream:ReadByte();
 	
@@ -1448,7 +1462,7 @@ KBEngineLua.Client_onUpdateData_xz_p = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
+	local xz = this.readPackXZ(stream);
 
 	local p = stream:ReadByte();
 	
@@ -1459,7 +1473,7 @@ KBEngineLua.Client_onUpdateData_xz_r = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
+	local xz = this.readPackXZ(stream);
 
 	local r = stream:ReadByte();
 	
@@ -1470,8 +1484,8 @@ KBEngineLua.Client_onUpdateData_xyz = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
-	local y = stream:readPackY();
+	local xz = this.readPackXZ(stream);
+	local y = this.readPackY(stream);
 	
 	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 0);
 end
@@ -1480,8 +1494,8 @@ KBEngineLua.Client_onUpdateData_xyz_ypr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
-	local y = stream:readPackY();
+	local xz = this.readPackXZ(stream);
+	local y = this.readPackY(stream);
 	
 	local yaw = stream:ReadByte();
 	local p = stream:ReadByte();
@@ -1494,8 +1508,8 @@ KBEngineLua.Client_onUpdateData_xyz_yp = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
-	local y = stream:readPackY();
+	local xz = this.readPackXZ(stream);
+	local y = this.readPackY(stream);
 	
 	local yaw = stream:ReadByte();
 	local p = stream:ReadByte();
@@ -1507,8 +1521,8 @@ KBEngineLua.Client_onUpdateData_xyz_yr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
-	local y = stream:readPackY();
+	local xz = this.readPackXZ(stream);
+	local y = this.readPackY(stream);
 	
 	local yaw = stream:ReadByte();
 	local r = stream:ReadByte();
@@ -1520,8 +1534,8 @@ KBEngineLua.Client_onUpdateData_xyz_pr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
-	local y = stream:readPackY();
+	local xz = this.readPackXZ(stream);
+	local y = this.readPackY(stream);
 	
 	local p = stream:ReadByte();
 	local r = stream:ReadByte();
@@ -1533,8 +1547,8 @@ KBEngineLua.Client_onUpdateData_xyz_y = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
-	local y = stream:readPackY();
+	local xz = this.readPackXZ(stream);
+	local y = this.readPackY(stream);
 	
 	local yaw = stream:ReadByte();
 	
@@ -1545,8 +1559,8 @@ KBEngineLua.Client_onUpdateData_xyz_p = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
-	local y = stream:readPackY();
+	local xz = this.readPackXZ(stream);
+	local y = this.readPackY(stream);
 	
 	local p = stream:ReadByte();
 	
@@ -1557,8 +1571,8 @@ KBEngineLua.Client_onUpdateData_xyz_r = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
 	
-	local xz = stream:readPackXZ();
-	local y = stream:readPackY();
+	local xz = this.readPackXZ(stream);
+	local y = this.readPackY(stream);
 	
 	local r = stream:ReadByte();
 	
