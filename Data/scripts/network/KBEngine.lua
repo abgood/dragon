@@ -120,6 +120,9 @@ KBEngineLua.networkPacket = VectorBuffer();
 KBEngineLua.networkDataLength = 0;
 -- 单个网络数据包长度
 KBEngineLua.networkMsgLen = 0;
+-- 网络数据种子
+KBEngineLua.seed = 0xf3cc945a;
+KBEngineLua.seed_flag = 0;
 
 -- 按照标准，每个客户端部分都应该包含这个属性
 KBEngineLua.component = "client"; 
@@ -539,14 +542,14 @@ KBEngineLua.onImportClientMessages = function( stream )
 		
 		local handler = nil;
 		local isClientMethod = string.find(msgname, "Client_") ~= nil;
-		if isClientMethod then
-			handler = KBEngineLua[msgname];
-			if handler == nil then
-				logDbg("KBEngineApp::onImportClientMessages[" .. KBEngineLua.currserver .. "]: interface(" .. msgname .. "/" .. msgid .. ") no implement!");
-			else
-				logDbg("KBEngineApp::onImportClientMessages: import(" .. msgname .. "/" .. msgid .. ") successfully!");
-			end
-		end
+		-- if isClientMethod then
+		-- 	handler = KBEngineLua[msgname];
+		-- 	if handler == nil then
+		-- 		logDbg("KBEngineApp::onImportClientMessages[" .. KBEngineLua.currserver .. "]: interface(" .. msgname .. "/" .. msgid .. ") no implement!");
+		-- 	else
+		-- 		logDbg("KBEngineApp::onImportClientMessages: import(" .. msgname .. "/" .. msgid .. ") successfully!");
+		-- 	end
+		-- end
 	
 		if string.len(msgname) > 0 then
 			KBEngineLua.messages[msgname] = KBEngineLua.Message:New(msgid, msgname, msglen, argtype, argstypes, handler);
@@ -613,7 +616,7 @@ end
 KBEngineLua.onImportClientMessagesCompleted = function()
 	logInfo("KBEngine::onImportClientMessagesCompleted: successfully! currserver=" .. 
 		this.currserver .. ", currstate=" .. this.currstate);
-	this.hello();
+	-- this.hello();
 
 	if(this.currserver == "loginapp") then
 		if(not this.isImportServerErrorsDescr_ and not this.loadingLocalMessages_) then
@@ -2126,6 +2129,86 @@ end
 KBEngineLua.update = function()
 	-- 向服务端发送心跳以及同步角色信息到服务端
     this.sendTick();
+end
+
+KBEngineLua.random_seed = function()
+	this.seed = this.seed * 214013 + 2531011;
+	this.seed = bit.band(this.seed, 0xffffffff);
+
+	num = bit.rshift(this.seed, 15);
+	num = bit.band(num, 0xffff);
+	return num;
+end
+
+-- KBEngineLua.encode = function(src)
+KBEngineLua.encode = function()
+	local src = VectorBuffer();
+
+	local stream = VectorBuffer();
+	local datas = VectorBuffer();
+
+	-- stream:WriteUInt(0x000138FF);
+	src:WriteByte(0x97);
+	src:WriteByte(0x00);
+	src:WriteByte(0x00);
+	src:WriteByte(0x00);
+	src:WriteByte(0x00);
+	src:WriteByte(0x00);
+	src:WriteByte(0x01);
+
+	if (src.size < 0xff) then
+		-- stream:WriteByte(src.size);
+		stream:WriteUInt(0x000138FF);
+	else
+		stream:writeUint(src.size);
+	end
+
+	src:Seek(0);
+	while(not src:IsEof())
+	do
+		byte = src:ReadByte();
+		stream:WriteByte(byte);
+	end
+
+	src:Clear();
+	stream:Seek(0);
+	while(not stream:IsEof())
+	do
+		local rseed = this.random_seed();
+
+		local low_rseed = bit.band(rseed, 0xff);
+		local tmp = bit.rshift(rseed, 8);
+		local high_rseed = bit.band(tmp, 0xff);
+
+		local new_low_byte = 0;
+		local new_high_byte = 0;
+
+		local low_byte = stream:ReadByte();
+		local high_byte = stream:ReadByte();
+		low_byte = bit.band(low_byte, 0xff);
+		high_byte = bit.band(high_byte, 0xff);
+
+		tmp = bit.bxor(low_byte, low_rseed);
+		new_low_byte = bit.bxor(tmp, this.seed_flag);
+
+		tmp = bit.bxor(high_byte, high_rseed);
+		tmp = bit.bxor(tmp, this.seed_flag);
+		new_high_byte = bit.bxor(tmp, 0xab);
+
+		this.seed_flag = new_high_byte;
+
+		datas:WriteByte(new_low_byte);
+		datas:WriteByte(new_high_byte);
+	end
+
+	stream:Clear();
+	return datas;
+end
+
+KBEngineLua.decode = function(stream)
+	datas = VectorBuffer();
+
+	return datas;
 end
 
 return KBEngineLua

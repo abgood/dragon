@@ -21,6 +21,8 @@ function Start()
 	SampleInitMouseMode(MM_FREE)
 	
 	SubscribeToEvents()
+
+	libnetwork.encode();
 end
 
 function Stop()
