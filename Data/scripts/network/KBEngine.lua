@@ -181,7 +181,8 @@ function HandleNetworkMessage(eventType, eventData)
 		this.networkMsgLen = 0;
 		this.networkPacket:Seek(0);
 
-		KBEngineLua.MessageReader.process(this.networkPacket);
+		this.print_stream("\nBundle::recv: packet", this.networkPacket);
+		this.MessageReader.process(this.networkPacket);
 	end
 end
 
@@ -542,14 +543,14 @@ KBEngineLua.onImportClientMessages = function( stream )
 		
 		local handler = nil;
 		local isClientMethod = string.find(msgname, "Client_") ~= nil;
-		-- if isClientMethod then
-		-- 	handler = KBEngineLua[msgname];
-		-- 	if handler == nil then
-		-- 		logDbg("KBEngineApp::onImportClientMessages[" .. KBEngineLua.currserver .. "]: interface(" .. msgname .. "/" .. msgid .. ") no implement!");
-		-- 	else
-		-- 		logDbg("KBEngineApp::onImportClientMessages: import(" .. msgname .. "/" .. msgid .. ") successfully!");
-		-- 	end
-		-- end
+		if isClientMethod then
+			handler = KBEngineLua[msgname];
+			if handler == nil then
+				logDbg("KBEngineApp::onImportClientMessages[" .. KBEngineLua.currserver .. "]: interface(" .. msgname .. "/" .. msgid .. ") no implement!");
+			else
+				logDbg("KBEngineApp::onImportClientMessages: import(" .. msgname .. "/" .. msgid .. ") successfully!");
+			end
+		end
 	
 		if string.len(msgname) > 0 then
 			KBEngineLua.messages[msgname] = KBEngineLua.Message:New(msgid, msgname, msglen, argtype, argstypes, handler);
@@ -616,7 +617,7 @@ end
 KBEngineLua.onImportClientMessagesCompleted = function()
 	logInfo("KBEngine::onImportClientMessagesCompleted: successfully! currserver=" .. 
 		this.currserver .. ", currstate=" .. this.currstate);
-	-- this.hello();
+	this.hello();
 
 	if(this.currserver == "loginapp") then
 		if(not this.isImportServerErrorsDescr_ and not this.loadingLocalMessages_) then
@@ -2163,15 +2164,10 @@ KBEngineLua.encode = function()
 		stream:writeUint(src.size);
 	end
 
-	src:Seek(0);
-	while(not src:IsEof())
-	do
-		byte = src:ReadByte();
-		stream:WriteByte(byte);
-	end
-
+	stream = this.append_stream(src, stream);
 	src:Clear();
-	stream:Seek(0);
+
+	this.print_stream("\nnet before encode", stream);
 	while(not stream:IsEof())
 	do
 		local rseed = this.random_seed();
@@ -2200,8 +2196,69 @@ KBEngineLua.encode = function()
 		datas:WriteByte(new_low_byte);
 		datas:WriteByte(new_high_byte);
 	end
+	this.print_stream("\nnet after encode", datas);
 
 	stream:Clear();
+	return datas;
+end
+
+KBEngineLua.print_stream = function(title, stream)
+	stream:Seek(0);
+	local num = 0;
+	local tmp_str = "";
+
+	while(not stream:IsEof())
+	do
+		local byte = stream:ReadByte();
+		byte = bit.band(byte, 0xff);
+		local byte_str = string.format("%02X", byte);
+
+		if num >= 64 then
+			num = 0;
+			tmp_str = (tmp_str .. "\n " .. byte_str);
+		else
+			tmp_str = (tmp_str .. " " .. byte_str);
+		end
+
+		num = (num + 1);
+	end
+
+	str = title .. " length: " .. stream.size .. "\n" .. tmp_str .. "\n";
+	logDbg(str);
+
+	stream:Seek(0);
+end
+
+KBEngineLua.copy_stream = function(stream)
+	local datas = VectorBuffer();
+
+	stream:Seek(0);
+	datas:Seek(0);
+
+	while(not stream:IsEof())
+	do
+		byte = stream:ReadByte();
+		datas:WriteByte(byte);
+	end
+
+	stream:Seek(0);
+	datas:Seek(0);
+
+	return datas;
+end
+
+KBEngineLua.append_stream = function(stream, datas)
+	stream:Seek(0);
+
+	while(not stream:IsEof())
+	do
+		byte = stream:ReadByte();
+		datas:WriteByte(byte);
+	end
+
+	stream:Seek(0);
+	datas:Seek(0);
+
 	return datas;
 end
 
