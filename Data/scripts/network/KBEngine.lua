@@ -168,7 +168,8 @@ function HandleNetworkMessage(eventType, eventData)
 		this.networkDataLength = msglen + msg.position;
 		this.networkPacket:Clear();
 
-		logDbg("KBEngineLua network data recv [S2C], msgid: " .. msgid .. ", length: " .. this.networkDataLength);
+		msg_obj = this.clientMessages[msgid];
+		logDbg("KBEngineLua network data recv [S2C], msgid: " .. msgid .. ", name: " .. msg_obj.name .. ", length: " .. this.networkDataLength);
 	end
 
 	msg:Seek(0);
