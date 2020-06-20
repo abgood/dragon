@@ -48,7 +48,7 @@ end
 
 function scene.addSpaceGeometryMapping(resPath)
 	logDbg("scene:addSpaceGeometryMapping set map", resPath);
-	scene_:LoadXML(fileSystem:GetProgramDir() .. "Data/Scenes/Isometric2D.xml");
+	scene_:LoadXML(fileSystem:GetProgramDir() .. "Data/Scenes/Raycast.xml");
 	cameraNode = scene_:GetChild("Camera");
 
 	SetupViewport();

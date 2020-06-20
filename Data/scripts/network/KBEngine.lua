@@ -2084,7 +2084,8 @@ KBEngineLua.sendTick = function()
 	local span = os.clock() - this._lastTickTime; 
 	
 	-- 更新玩家的位置与朝向到服务端
-	this.updatePlayerToServer();
+	-- lj test
+	-- this.updatePlayerToServer();
 	
 	if(span > 15) then
 		span = this._lastTickCBTime - this._lastTickTime;

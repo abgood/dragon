@@ -14,7 +14,7 @@ function Start()
 
 	event.init()
 	libnetwork.init()
-	login.init()
+	-- login.init()
 	scene.init()
 	map.init()
 
@@ -23,6 +23,8 @@ function Start()
 	SubscribeToEvents()
 
 	libnetwork.encode();
+
+	scene.addSpaceGeometryMapping()
 end
 
 function Stop()
