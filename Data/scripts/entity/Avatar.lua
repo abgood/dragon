@@ -17,7 +17,7 @@ function KBEngineLua.Avatar:New()
 end
 
 function KBEngineLua.Avatar:__init__()
-	print ("lj Avatar __init__");
+	logDbg("KBEAvatar::__init__");
 end
 
 function KBEngineLua.Avatar:relive(type_id)

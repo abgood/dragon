@@ -1321,7 +1321,7 @@ KBEngineLua.Client_onSetEntityPosAndDir = function(stream)
 	entity._entityLastLocalDir.x = entity.direction.x;
 	entity._entityLastLocalDir.y = entity.direction.y;
 	entity._entityLastLocalDir.z = entity.direction.z;	
-			
+
 	entity:set_direction(entity.direction);
 	entity:set_position(entity.position);
 end

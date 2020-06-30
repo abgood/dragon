@@ -35,11 +35,21 @@ function scene.enter_scene()
 end
 
 function scene.set_direction(entity)
-	print ("lj set_direction");
+	logDbg("KBEscene.set_direction entity id: " .. entity.id);
+	local ae = self.entities[entity.id];
+	if (not ae) then
+		return;
+	end
+	print ("lj set_direction", entity.id);
 end
 
 function scene.set_position(entity)
-	print ("lj set_position");
+	logDbg("KBEscene.set_position entity id: " .. entity.id);
+	local ae = self.entities[entity.id];
+	if (not ae) then
+		return;
+	end
+	print ("lj set_position", entity.id);
 end
 
 function scene.onEnterWorld(entity)
@@ -51,13 +61,42 @@ function scene.addSpaceGeometryMapping(resPath)
 	scene_:LoadXML(fileSystem:GetProgramDir() .. "Data/Scenes/Raycast.xml");
 	cameraNode = scene_:GetChild("Camera");
 
+    local lightNode = scene_:GetChild("DirectionalLight")
+    lightNode.direction = Vector3(0.3, -0.5, 0.425)
+
 	SetupViewport();
+
+	add_mushrooms();
 end
 
 function SetupViewport()
-	local viewport = Viewport:new(scene_, cameraNode:GetComponent("Camera"));
-	renderer:SetViewport(0, viewport);
-	renderer.defaultZone.fogColor = Color(0.2, 0.2, 0.2);
+    local camera = cameraNode:GetComponent("Camera")
+    renderer:SetViewport(0, Viewport:new(scene_, camera))
+end
+
+function add_mushrooms()
+	local terrainNode = scene_:GetChild("Terrain");
+	local terrain = terrainNode:GetComponent("Terrain");
+
+	local NUM_MUSHROOMS = 1000;
+	for i = 1, NUM_MUSHROOMS do
+		local objectNode = scene_:CreateChild("Mushroom");
+		local position = Vector3(Random(2000.0) - 1000.0, 0.0, Random(2000.0) - 1000.0);
+		position.y = terrain:GetHeight(position) - 0.1;
+		objectNode.position = position;
+		objectNode.rotation = Quaternion(Vector3(0.0, 1.0, 0.0), terrain:GetNormal(position));
+		objectNode:SetScale(3.0);
+
+		local object = objectNode:CreateComponent("StaticModel");
+		object.model = cache:GetResource("Model", "Models/Mushroom.mdl");
+		object.material = cache:GetResource("Material", "Materials/Mushroom.xml");
+		object.castShadows = true;
+
+		local body = objectNode:CreateComponent("RigidBody");
+		body.collisionLayer = 2;
+		local shape = objectNode:CreateComponent("CollisionShape");
+		shape:SetTriangleMesh(object.model, 0);
+	end
 end
 
 

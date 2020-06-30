@@ -48,18 +48,18 @@ function KBEngineLua.Account:onReqAvatarList(infos)
 	logDbg("KBEAccount::onReqAvatarList: avatarsize = " .. #self.avatars["values"]);
 
 	for k, v in ipairs(self.avatars["values"]) do
-		logDbg("KBEAccount::onReqAvatarList: name" .. k .. " = (" .. v["name"] .. ")");
+		logDbg("KBEAccount::onReqAvatarList: name_" .. k .. " = (" .. v["name"] .. ")");
 	end
 
 	KBEngineLua.Event.Brocast("onReqAvatarList", self.avatars);
 end
 
 function KBEngineLua.Account:reqCreateAvatar(roleType, name)
-	print ('lj reqCreateAvatar', roleType, name);
+	logDbg("KBEAccount::reqCreateAvatar roleType: " .. roleType .. ", name: " .. name);
 	self:baseCall("reqCreateAvatar", roleType, name);
 end
 
 function KBEngineLua.Account:selectAvatarGame(dbid)
-	print ('lj selectAvatarGame', dbid);
+	logDbg("KBEAccount::selectAvatarGame dbid: " .. dbid);
 	self:baseCall("selectAvatarGame", dbid);
 end

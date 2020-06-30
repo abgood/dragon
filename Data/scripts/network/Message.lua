@@ -44,6 +44,8 @@ function KBEngineLua.Message:createFromStream(msgstream)
 end
 	
 function KBEngineLua.Message:handleMessage(msgstream)
+	logDbg("KBEngine.Message::handleMessage: id: " .. self.id .. ", name: " .. self.name .. ", msglen: " .. self.msglen .. ", argsType: " .. self.argsType .. ", args: " .. #self.args);
+
 	if self.handler == nil then
 		logDbg("KBEngine.Message::handleMessage: interface(" .. self.name .. "/" .. self.id .. ") no implement!");
 		return;
