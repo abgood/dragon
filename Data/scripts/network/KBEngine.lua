@@ -193,7 +193,6 @@ KBEngineLua.Destroy = function()
 	this.resetMessages();
 
 	this.uninstallEvents()
-	this.installEvents()
 end
 
 KBEngineLua.player = function()
@@ -1400,7 +1399,7 @@ KBEngineLua.Client_onUpdateData_xz = function(stream)
 	
 	local xz = this.readPackXZ(stream);
 	
-	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 1);
+	-- KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 1);
 end
 
 KBEngineLua.Client_onUpdateData_xz_ypr = function(stream)
@@ -1460,7 +1459,7 @@ KBEngineLua.Client_onUpdateData_xz_y = function(stream)
 
 	local y = stream:ReadByte();
 	
-	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 1);
+	-- KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 1);
 end
 
 KBEngineLua.Client_onUpdateData_xz_p = function(stream)
@@ -1644,6 +1643,7 @@ end
 
 KBEngineLua.login = function( username, password, data )
 	this.Destroy();
+	this.installEvents();
 
 	KBEngineLua.username = username;
 	KBEngineLua.password = password;
@@ -2129,7 +2129,7 @@ end
 
 	---插件的主循环处理函数
 
-KBEngineLua.update = function()
+KBEngineLua.update = function(eventType, eventData)
 	-- 向服务端发送心跳以及同步角色信息到服务端
     this.sendTick();
 end

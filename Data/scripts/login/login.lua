@@ -25,7 +25,7 @@ function login.init()
 	createLoginUI()
 end
 
-function login.onLoginSuccessfully()
+function login.onLoginSuccessfully(rndUUID, eid, accountEntity)
 	logInfo("Login is successfully!(登陆成功!)");
 
 	local enterUI = ui:LoadLayout(cache:GetResource("XMLFile", "UI/login/enter.xml"))

@@ -4,7 +4,8 @@ require "scripts/network/Dbg"
 local game = require 'game.game'
 local libnetwork = require 'network.KBEngine'
 
-local scene = {}
+scene = {}
+
 setmetatable(scene, scene)
 
 local mt = {}
@@ -18,6 +19,8 @@ mt.id = 'l_0001'
 mt.type = 'scene'
 mt.name = 'scene'
 mt.entities = {}
+mt.player = nil
+
 
 
 
@@ -36,7 +39,7 @@ end
 
 function scene.set_direction(entity)
 	logDbg("KBEscene.set_direction entity id: " .. entity.id);
-	local ae = self.entities[entity.id];
+	local ae = scene.entities[entity.id];
 	if (not ae) then
 		return;
 	end
@@ -45,7 +48,7 @@ end
 
 function scene.set_position(entity)
 	logDbg("KBEscene.set_position entity id: " .. entity.id);
-	local ae = self.entities[entity.id];
+	local ae = scene.entities[entity.id];
 	if (not ae) then
 		return;
 	end
@@ -53,11 +56,14 @@ function scene.set_position(entity)
 end
 
 function scene.onEnterWorld(entity)
-	print ("lj scene onEnterWorld");
+	logDbg("KBEscene.onEnterWorld entity id: " .. entity.id);
+	if (not entity:isPlayer()) then
+		print ("lj onEnterWorld", entity.id, entity.className);
+	end
 end
 
 function scene.addSpaceGeometryMapping(resPath)
-	logDbg("scene:addSpaceGeometryMapping set map", resPath);
+	logDbg("scene:addSpaceGeometryMapping set map: " .. resPath);
 	scene_:LoadXML(fileSystem:GetProgramDir() .. "Data/Scenes/Raycast.xml");
 	cameraNode = scene_:GetChild("Camera");
 
@@ -67,6 +73,53 @@ function scene.addSpaceGeometryMapping(resPath)
 	SetupViewport();
 
 	add_mushrooms();
+
+	create_avatar_enter_world();
+end
+
+function scene.onAvatarEnterWorld(rndUUID, eid, avatar)
+	logDbg("scene:onAvatarEnterWorld uuid: " .. rndUUID .. ", eid: " .. eid);
+
+	scene.player = avatar;
+end
+
+function scene.post_update(eventType, eventData)
+	if (not scene) then
+		return;
+	end
+
+	local vehicleNode = scene.entities[libnetwork.entity_id];
+	if (not vehicleNode) then
+		return;
+	end
+
+    local vehicle = vehicleNode:GetScriptObject();
+	if (not vehicle) then
+		return;
+	end
+
+	local dir = Quaternion(vehicleNode.rotation:YawAngle(), Vector3(0.0, 1.0, 0.0));
+	dir = dir * Quaternion(vehicle.controls.yaw, Vector3(0.0, 1.0, 0.0));
+	dir = dir * Quaternion(vehicle.controls.pitch, Vector3(1.0, 0.0, 0.0));
+
+	local cameraTargetPos = vehicleNode.position - dir * Vector3(0.0, 0.0, CAMERA_DISTANCE);
+	local cameraStartPos = vehicleNode.position;
+
+	local cameraRay = Ray(cameraStartPos, (cameraTargetPos - cameraStartPos):Normalized());
+	local cameraRayLength = (cameraTargetPos - cameraStartPos):Length();
+	local physicsWorld = scene_:GetComponent("PhysicsWorld");
+	local result = physicsWorld:RaycastSingle(cameraRay, cameraRayLength, 2);
+	if result.body ~= nil then
+		cameraTargetPos = cameraStartPos + cameraRay.direction * (result.distance - 0.5);
+	end
+
+	cameraNode.position = cameraTargetPos;
+	cameraNode.rotation = dir;
+end
+
+function create_avatar_enter_world()
+	local obj = scene.player:create_avatar();
+	scene.entities[scene.player.id] = obj;
 end
 
 function SetupViewport()

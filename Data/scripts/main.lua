@@ -29,17 +29,21 @@ end
 
 function Stop()
 	event.uninstallEvents()
+	libnetwork.Destroy();
 end
 
 function SubscribeToEvents()
     SubscribeToEvent("Update", "HandleUpdate")
+    SubscribeToEvent("PostUpdate", "HandlePostUpdate")
 
     SubscribeToEvent("NetworkMessage", "HandleNetworkMessage")
     SubscribeToEvent("ServerConnected", "HandleConnectionStatus")
 end
 
 function HandleUpdate(eventType, eventData)
-    local timeStep = eventData["TimeStep"]:GetFloat()
+	libnetwork.update(eventType, eventData);
+end
 
-	libnetwork.update();
+function HandlePostUpdate(eventType, eventData)
+	scene.post_update(eventType, eventData);
 end

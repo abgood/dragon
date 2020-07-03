@@ -118,7 +118,6 @@ KBEngineLua.MessageReader = {
 	msglen = 0,
 	expectSize = 2,
 	state = KBEngineLua.READ_STATE_MSGID,
-	-- stream = KBEngine.MemoryStream.New(),
 	stream = VectorBuffer(),
 };
 local reader = KBEngineLua.MessageReader;

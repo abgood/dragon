@@ -21,7 +21,7 @@ function KBEngineLua.Account:__init__()
 	logDbg("KBEAccount::__init__");
 	self.avatars = {};
 
-	KBEngineLua.Event.Brocast("onLoginSuccessfully", KBEngineLua.entity_uuid, KBEngineLua.entity_id, KBEngineLua);
+	KBEngineLua.Event.Brocast("onLoginSuccessfully", KBEngineLua.entity_uuid, self.id, self);
 
 	self:baseCall("reqAvatarList");
 end

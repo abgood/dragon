@@ -1,5 +1,6 @@
 
 require "scripts/network/Entity"
+require "scripts/network/Dbg"
 
 
 KBEngineLua.Monster = {}
@@ -17,7 +18,7 @@ function KBEngineLua.Monster:New()
 end
 
 function KBEngineLua.Monster:__init__()
-	print ("lj Monster __init__");
+	logDbg("KBEMonster::__init__");
 end
 
 function KBEngineLua.Monster:recvDamage(attackerID, skillID, damageType, damage)

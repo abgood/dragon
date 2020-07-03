@@ -1,5 +1,7 @@
 
+require "scripts/libs/Base"
 require "scripts/network/Entity"
+require "scripts/network/Dbg"
 
 
 KBEngineLua.Avatar = {}
@@ -45,7 +47,11 @@ function KBEngineLua.Avatar:onRemoveSkill(skillID)
 end
 
 function KBEngineLua.Avatar:onEnterWorld()
-	print ("lj onEnterWorld");
+	logInfo("KBEAvatar::onEnterWorld className: " .. self.className .. ", entity id: " .. self.id);
+	if (self:isPlayer()) then
+		KBEngineLua.Event.Brocast("onAvatarEnterWorld", KBEngineLua.entity_uuid, self.id, self);
+		self:cellCall("requestPull");
+	end
 end
 
 function KBEngineLua.Avatar:dialog_addOption(dialogType, dialogKey, title, extra)
@@ -62,4 +68,16 @@ end
 
 function KBEngineLua.Avatar:recvDamage(attackerID, skillID, damageType, damage)
 	print ("lj recvDamage", attackerID, skillID, damageType, damage);
+end
+
+function KBEngineLua.Avatar:create_avatar()
+	logDbg("KBEAvatar::create_avatar");
+
+	self.renderObj = scene_:CreateChild("vehicle");
+	self.renderObj.position = Vector3(0.0, 5.0, 0.0);
+
+	local vehicle = self.renderObj:CreateScriptObject("scripts/object/Vehicle.lua", "Vehicle");
+	vehicle:Init();
+
+	return self.renderObj;
 end
