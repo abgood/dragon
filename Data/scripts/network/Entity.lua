@@ -201,3 +201,18 @@ end
 KBEngineLua.Entity.set_direction = function(self, old)
 	KBEngineLua.Event.Brocast("set_direction", self);
 end
+
+KBEngineLua.Entity.setDirection = function(self, dir)
+	logInfo(self.className .. '::setDirection: ' .. self.id .. ", dir: " .. dir); 
+    local vehicle = self.renderObj:GetScriptObject();
+	if (vehicle) then
+		vehicle:SetDir(dir);
+	end
+end
+
+KBEngineLua.Entity.SetPosition = function(self, x, y, z)
+	logInfo(self.className .. '::SetPosition: ' .. self.id .. ", x: " .. x .. ", y: " .. y .. ", z: " .. z); 
+	if (self.renderObj) then
+		self.renderObj:SetPosition(Vector3(x, y, z));
+	end
+end

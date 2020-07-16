@@ -79,5 +79,5 @@ function KBEngineLua.Avatar:create_avatar()
 	local vehicle = self.renderObj:CreateScriptObject("scripts/object/Vehicle.lua", "Vehicle");
 	vehicle:Init();
 
-	return self.renderObj;
+	return self;
 end

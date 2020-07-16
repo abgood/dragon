@@ -23,6 +23,9 @@ mt.player = nil
 
 
 
+local CAMERA_DISTANCE = 10.0;
+
+
 
 function scene.init()
 	logInfo(scene:get_type() .. " init");
@@ -43,7 +46,7 @@ function scene.set_direction(entity)
 	if (not ae) then
 		return;
 	end
-	print ("lj set_direction", entity.id);
+	ae:setDirection(entity.direction.z);
 end
 
 function scene.set_position(entity)
@@ -52,7 +55,11 @@ function scene.set_position(entity)
 	if (not ae) then
 		return;
 	end
-	print ("lj set_position", entity.id);
+	print ("lj set_position", entity.id, entity.position.x, entity.position.y, entity.position.z);
+	if (not ae) then
+		return;
+	end
+	ae:SetPosition(entity.position.x, entity.position.y, entity.position.z);
 end
 
 function scene.onEnterWorld(entity)
@@ -88,7 +95,12 @@ function scene.post_update(eventType, eventData)
 		return;
 	end
 
-	local vehicleNode = scene.entities[libnetwork.entity_id];
+	local ae = scene.entities[libnetwork.entity_id];
+	if (not ae) then
+		return;
+	end
+
+	local vehicleNode = ae.renderObj;
 	if (not vehicleNode) then
 		return;
 	end

@@ -2,6 +2,7 @@
 Vehicle = ScriptObject();
 
 function Vehicle:Start()
+	self.steering = 0.0;
 	self.controls = Controls();
 end
 
@@ -21,4 +22,11 @@ function Vehicle:Init()
 	self.hullBody.linearDamping = 0.2;
 	self.hullBody.angularDamping = 0.5;
 	self.hullBody.collisionLayer = 1;
+end
+
+function Vehicle:FixedUpdate(timeStep)
+end
+
+function Vehicle:SetDir(dir)
+	self.steering = dir;
 end
