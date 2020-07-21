@@ -24,6 +24,11 @@ mt.player = nil
 
 
 local CAMERA_DISTANCE = 10.0;
+local CTRL_FORWARD = 1;
+local CTRL_BACK = 2;
+local CTRL_LEFT = 4;
+local CTRL_RIGHT = 8;
+local CTRL_BRAKE = 16;
 
 
 
@@ -88,6 +93,37 @@ function scene.onAvatarEnterWorld(rndUUID, eid, avatar)
 	logDbg("scene:onAvatarEnterWorld uuid: " .. rndUUID .. ", eid: " .. eid);
 
 	scene.player = avatar;
+end
+
+function scene.update(eventType, eventData)
+	if (not scene) then
+		return;
+	end
+
+	local ae = scene.entities[libnetwork.entity_id];
+	if (not ae) then
+		return;
+	end
+
+	local vehicleNode = ae.renderObj;
+	if (not vehicleNode) then
+		return;
+	end
+
+    local vehicle = vehicleNode:GetScriptObject();
+	if (not vehicle) then
+		return;
+	end
+
+	if ui.focusElement == nil then
+		vehicle.controls:Set(CTRL_FORWARD, input:GetKeyDown(KEY_W));
+		vehicle.controls:Set(CTRL_BACK, input:GetKeyDown(KEY_S));
+		vehicle.controls:Set(CTRL_LEFT, input:GetKeyDown(KEY_A));
+		vehicle.controls:Set(CTRL_RIGHT, input:GetKeyDown(KEY_D));
+		vehicle.controls:Set(CTRL_BRAKE, input:GetKeyDown(KEY_F));
+	else
+		vehicle.controls:Set(CTRL_FORWARD + CTRL_BACK + CTRL_LEFT + CTRL_RIGHT, false);
+	end
 end
 
 function scene.post_update(eventType, eventData)

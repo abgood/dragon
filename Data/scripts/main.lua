@@ -42,6 +42,7 @@ end
 
 function HandleUpdate(eventType, eventData)
 	libnetwork.update(eventType, eventData);
+	scene.update(eventType, eventData);
 end
 
 function HandlePostUpdate(eventType, eventData)
