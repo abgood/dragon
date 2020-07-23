@@ -60,7 +60,6 @@ function scene.set_position(entity)
 	if (not ae) then
 		return;
 	end
-	print ("lj set_position", entity.id, entity.position.x, entity.position.y, entity.position.z);
 	if (not ae) then
 		return;
 	end
@@ -70,7 +69,8 @@ end
 function scene.onEnterWorld(entity)
 	logDbg("KBEscene.onEnterWorld entity id: " .. entity.id);
 	if (not entity:isPlayer()) then
-		print ("lj onEnterWorld", entity.id, entity.className);
+		local obj = entity:create_avatar();
+		scene.entities[entity.id] = obj;
 	end
 end
 

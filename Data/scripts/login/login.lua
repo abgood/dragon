@@ -19,6 +19,8 @@ mt.type = 'login'
 mt.name = 'login'
 
 
+account_id = 2;
+
 
 function login.init()
 	logInfo(login:get_type() .. " init");
@@ -59,7 +61,7 @@ end
 
 function showCreatePlayerUI(flag)
 	if flag then
-		libnetwork.player():reqCreateAvatar(1, "june");
+		libnetwork.player():reqCreateAvatar(account_id, "june_" .. tostring(account_id));
 	end
 end
 
@@ -102,7 +104,7 @@ function createLoginUI()
 	end
 
 	-- lj test
-	libnetwork.login("1", "456", "kbengine_urho3d_demo");
+	libnetwork.login(tostring(account_id), "456", "kbengine_urho3d_demo");
 end
 
 function showLoginUI(flag)

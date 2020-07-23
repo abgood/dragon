@@ -74,7 +74,6 @@ function KBEngineLua.Avatar:create_avatar()
 	logDbg("KBEAvatar::create_avatar");
 
 	self.renderObj = scene_:CreateChild("vehicle");
-	self.renderObj.position = Vector3(0.0, 5.0, 0.0);
 
 	local vehicle = self.renderObj:CreateScriptObject("scripts/object/Vehicle.lua", "Vehicle");
 	vehicle:Init();
