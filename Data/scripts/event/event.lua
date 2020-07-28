@@ -1,9 +1,9 @@
 require "scripts/network/Dbg"
 
-local game = require 'game.game'
-local libnetwork = require 'network.KBEngine'
-local login = require 'login.login'
-local scene = require 'scene.scene'
+local game = require 'scripts/game/game'
+local libnetwork = require 'scripts/network/KBEngine'
+local login = require 'scripts/login/login'
+local scene = require 'scripts/scene/scene'
 
 local event = {}
 setmetatable(event, event)

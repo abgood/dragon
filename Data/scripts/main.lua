@@ -2,11 +2,11 @@
 require "scripts/libs/Base"
 
 
-local event = require 'event.event'
-local libnetwork = require 'network.KBEngine'
-local login = require 'login.login'
-local scene = require 'scene.scene'
-local map = require 'map.map'
+local event = require 'scripts/event/event'
+local libnetwork = require 'scripts/network/KBEngine'
+local login = require 'scripts/login/login'
+local scene = require 'scripts/scene/scene'
+local map = require 'scripts/map/map'
 
 
 function Start()

@@ -1,8 +1,8 @@
 require "scripts/libs/Base"
 require "scripts/network/Dbg"
 
-local game = require 'game.game'
-local libnetwork = require 'network.KBEngine'
+local game = require 'scripts/game/game'
+local libnetwork = require 'scripts/network/KBEngine'
 
 scene = {}
 
@@ -76,7 +76,8 @@ end
 
 function scene.addSpaceGeometryMapping(resPath)
 	logDbg("scene:addSpaceGeometryMapping set map: " .. resPath);
-	scene_:LoadXML(fileSystem:GetProgramDir() .. "Data/Scenes/Raycast.xml");
+	local file = cache:GetFile("Scenes/Raycast.xml");
+	scene_:LoadXML(file);
 	cameraNode = scene_:GetChild("Camera");
 
     local lightNode = scene_:GetChild("DirectionalLight")

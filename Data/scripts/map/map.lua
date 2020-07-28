@@ -1,7 +1,7 @@
 require "scripts/network/Dbg"
 
-local game = require 'game.game'
-local libnetwork = require 'network.KBEngine'
+local game = require 'scripts/game/game'
+local libnetwork = require 'scripts/network/KBEngine'
 
 local map = {}
 setmetatable(map, map)

@@ -1,7 +1,12 @@
 *.log
 *.swp
+*.luc
+*.pak
+*.zip
 
 tags
 Urho3DPlayer.exe
 
 logs/
+outputs/
+Data/outputs/
