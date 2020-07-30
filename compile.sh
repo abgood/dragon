@@ -3,6 +3,7 @@
 script_path="Data/scripts"
 output_path="Data/outputs"
 bin_path="$(pwd)/outputs"
+zip_file="outputs"
 
 function compile(){
 	for file in `ls $1`
@@ -62,3 +63,9 @@ mkdir -p $bin_path
 mkdir -p "$bin_path/logs"
 mv *.pak $bin_path
 cp Urho3DPlayer.exe "$bin_path/launch.exe" -axrf
+
+if [ -d $bin_path ]
+then
+	rm ${zip_file}.zip -rf
+	zip -r "${zip_file}.zip" ${zip_file}
+fi
