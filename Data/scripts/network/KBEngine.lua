@@ -81,7 +81,7 @@ KBEngineLua._clientdatas = VectorBuffer();
 KBEngineLua._encryptedKey = "";
 
 -- 服务端与客户端的版本号以及协议MD5
-KBEngineLua.clientVersion = "1.3.12";
+KBEngineLua.clientVersion = "1.3.13";
 KBEngineLua.clientScriptVersion = "0.1.0";
 KBEngineLua.serverVersion = "";
 KBEngineLua.serverScriptVersion = "";
