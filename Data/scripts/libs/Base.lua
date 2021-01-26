@@ -64,4 +64,3 @@ function HandleMouseModeChange(eventType, eventData)
     mouseLocked = eventData["MouseLocked"]:GetBool()
     input.mouseVisible = not mouseLocked
 end
-

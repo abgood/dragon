@@ -1,28 +1,17 @@
+
+map = {};
+
+local this = map;
+
 require "scripts/network/Dbg"
 
-local game = require 'scripts/game/game'
-local libnetwork = require 'scripts/network/KBEngine'
 
-local map = {}
-setmetatable(map, map)
-
-local mt = {}
-
-map.__index = mt
-
---- 继承game
-setmetatable(mt, game)
-
-mt.id = 'l_0001'
-mt.type = 'map'
-mt.name = 'map'
-mt.entities = {}
-
+map.entities = {};
 
 
 function map.init()
-	logInfo(map:get_type() .. " init");
+	logInfo("map init");
 end
 
 
-return map
+return map;

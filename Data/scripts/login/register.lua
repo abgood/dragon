@@ -1,73 +1,51 @@
+
 require "scripts/network/Dbg"
 
-local game = require 'scripts/game/game'
-local scene = require 'scripts/scene/scene'
-local libnetwork = require 'scripts/network/KBEngine'
+login.register = {};
 
-local register = {}
-setmetatable(register, register)
-
-local mt = {}
-
-register.__index = mt
-
---- 继承game
-setmetatable(mt, game)
-
-mt.id = 'l_0001'
-mt.type = 'register'
-mt.name = 'register'
-
-
-account_id = 2;
-
-
-function register.init()
-	logInfo(register:get_type() .. " init");
-	createRegisterUI()
+login.register.New = function(self, me)
+	me = me or {};
+	setmetatable(me, self);
+	self.__index = self;
+    return me;  
 end
 
-function createRegisterUI()
+login.register.init = function(self)
+	logInfo("register init");
+	self:createRegisterUI();
+end
+
+login.register.createRegisterUI = function(self)
 	logInfo("show register ui");
 
-	local style = cache:GetResource("XMLFile", "UI/DefaultStyle.xml")
-	ui.root.defaultStyle = style
-	
-	local cursor = ui.root:CreateChild("Cursor")
-	cursor:SetStyleAuto()
-	ui.cursor = cursor
-	cursor:SetPosition(graphics.width / 2, graphics.height / 2)
-	
-	local layoutRoot = ui:LoadLayout(cache:GetResource("XMLFile", "UI/login/register.xml"))
-	ui.root:AddChild(layoutRoot)
+	local layoutRoot = ui:LoadLayout(cache:GetResource("XMLFile", "UI/login/register.xml"));
+	ui.root:AddChild(layoutRoot);
 
-    local pawdEdit = layoutRoot:GetChild("pawd_edit", true)
-	pawdEdit.echoCharacter = 42
+    local pawdEdit = layoutRoot:GetChild("pawd_edit", true);
+	pawdEdit.echoCharacter = 42;
 
-	local button = layoutRoot:GetChild("registerBtn", true)
+	local button = layoutRoot:GetChild("registerBtn", true);
 	if button ~= nil then
-	    SubscribeToEvent(button, "Released", "requestRegister")
+	    SubscribeToEvent(button, "Released", "login.register.requestRegister");
 	end
 
-	local button = layoutRoot:GetChild("returnLoginBtn", true)
+	local button = layoutRoot:GetChild("returnLoginBtn", true);
 	if button ~= nil then
-	    SubscribeToEvent(button, "Released", "showLoginUIByRegisterUI")
+	    SubscribeToEvent(button, "Released", "login.register.showLoginUIByRegisterUI");
 	end
 end
 
-function showRegisterUI(flag)
+login.register.showLoginUIByRegisterUI = function(self, eventType, eventData)
+	login.register.showRegisterUI(false);
+	login.showLoginUI(true);
+end
+
+login.register.showRegisterUI = function(self, flag)
     local registerUI = ui.root:GetChild("registerUI");
 	registerUI:SetVisible(flag);
 end
 
-function showLoginUIByRegisterUI(eventType, eventData)
-	ui.root:RemoveAllChildren();
-
-	local login = require 'scripts/login/login'
-	login.init();
-end
-
-function requestRegister(eventType, eventData)
+login.register.requestRegister = function(self, eventType, eventData)
 	local layoutRoot = ui.root:GetChild("registerUI")
     local userEdit = layoutRoot:GetChild("user_edit", true)
     local pawdEdit = layoutRoot:GetChild("pawd_edit", true)
@@ -85,8 +63,5 @@ function requestRegister(eventType, eventData)
 		return;
 	end
 
-	libnetwork.createAccount(user, pawd, "kbengine_urho3d_demo");
+	login.libnetwork.createAccount(user, pawd, "kbengine_urho3d_demo");
 end
-
-
-return register

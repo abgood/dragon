@@ -1,26 +1,16 @@
+
+scene = {};
+
+local this = scene;
+
+
 require "scripts/libs/Base"
 require "scripts/network/Dbg"
+require "scripts/app"
 
-local game = require 'scripts/game/game'
-local libnetwork = require 'scripts/network/KBEngine'
 
-scene = {}
-
-setmetatable(scene, scene)
-
-local mt = {}
-
-scene.__index = mt
-
---- 继承game
-setmetatable(mt, game)
-
-mt.id = 'l_0001'
-mt.type = 'scene'
-mt.name = 'scene'
-mt.entities = {}
-mt.player = nil
-
+scene.entities = {}
+scene.player = nil
 
 
 local CAMERA_DISTANCE = 10.0;
@@ -31,32 +21,31 @@ local CTRL_RIGHT = 8;
 local CTRL_BRAKE = 16;
 
 
-
-function scene.init()
-	logInfo(scene:get_type() .. " init");
-	CreateScene()
+scene.init = function()
+	logInfo("scene init");
+	this.CreateScene()
 end
 
-function CreateScene()
+scene.CreateScene = function()
 	scene_ = Scene()
 end
 
-function scene.enter_scene()
+scene.enter_scene = function()
 	logDbg("scene:enter_scene set view port");
 end
 
-function scene.set_direction(entity)
+scene.set_direction = function(entity)
 	logDbg("KBEscene.set_direction entity id: " .. entity.id);
-	local ae = scene.entities[entity.id];
+	local ae = this.entities[entity.id];
 	if (not ae) then
 		return;
 	end
 	ae:setDirection(entity.direction.z);
 end
 
-function scene.set_position(entity)
+scene.set_position = function(entity)
 	logDbg("KBEscene.set_position entity id: " .. entity.id);
-	local ae = scene.entities[entity.id];
+	local ae = this.entities[entity.id];
 	if (not ae) then
 		return;
 	end
@@ -66,15 +55,15 @@ function scene.set_position(entity)
 	ae:SetPosition(entity.position.x, entity.position.y, entity.position.z);
 end
 
-function scene.onEnterWorld(entity)
+scene.onEnterWorld = function(entity)
 	logDbg("KBEscene.onEnterWorld entity id: " .. entity.id);
 	if (not entity:isPlayer()) then
 		local obj = entity:create_avatar();
-		scene.entities[entity.id] = obj;
+		this.entities[entity.id] = obj;
 	end
 end
 
-function scene.addSpaceGeometryMapping(resPath)
+scene.addSpaceGeometryMapping = function(resPath)
 	logDbg("scene:addSpaceGeometryMapping set map: " .. resPath);
 	local file = cache:GetFile("Scenes/Raycast.xml");
 	scene_:LoadXML(file);
@@ -83,25 +72,25 @@ function scene.addSpaceGeometryMapping(resPath)
     local lightNode = scene_:GetChild("DirectionalLight")
     lightNode.direction = Vector3(0.3, -0.5, 0.425)
 
-	SetupViewport();
+	this.SetupViewport();
 
-	add_mushrooms();
+	this.add_mushrooms();
 
-	create_avatar_enter_world();
+	this.create_avatar_enter_world();
 end
 
-function scene.onAvatarEnterWorld(rndUUID, eid, avatar)
+scene.onAvatarEnterWorld = function(rndUUID, eid, avatar)
 	logDbg("scene:onAvatarEnterWorld uuid: " .. rndUUID .. ", eid: " .. eid);
 
-	scene.player = avatar;
+	this.player = avatar;
 end
 
-function scene.update(eventType, eventData)
+scene.update = function(eventType, eventData)
 	if (not scene) then
 		return;
 	end
 
-	local ae = scene.entities[libnetwork.entity_id];
+	local ae = this.entities[app.libnetwork.entity_id];
 	if (not ae) then
 		return;
 	end
@@ -127,12 +116,12 @@ function scene.update(eventType, eventData)
 	end
 end
 
-function scene.post_update(eventType, eventData)
+scene.post_update = function(eventType, eventData)
 	if (not scene) then
 		return;
 	end
 
-	local ae = scene.entities[libnetwork.entity_id];
+	local ae = this.entities[app.libnetwork.entity_id];
 	if (not ae) then
 		return;
 	end
@@ -166,17 +155,17 @@ function scene.post_update(eventType, eventData)
 	cameraNode.rotation = dir;
 end
 
-function create_avatar_enter_world()
-	local obj = scene.player:create_avatar();
-	scene.entities[scene.player.id] = obj;
+create_avatar_enter_world = function()
+	local obj = this.player:create_avatar();
+	this.entities[this.player.id] = obj;
 end
 
-function SetupViewport()
+scene.SetupViewport = function()
     local camera = cameraNode:GetComponent("Camera")
     renderer:SetViewport(0, Viewport:new(scene_, camera))
 end
 
-function add_mushrooms()
+scene.add_mushrooms = function()
 	local terrainNode = scene_:GetChild("Terrain");
 	local terrain = terrainNode:GetComponent("Terrain");
 
@@ -202,4 +191,4 @@ function add_mushrooms()
 end
 
 
-return scene
+return scene;

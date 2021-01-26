@@ -1,35 +1,26 @@
 
 require "scripts/libs/Base"
-
-
-local event = require 'scripts/event/event'
-local libnetwork = require 'scripts/network/KBEngine'
-local login = require 'scripts/login/login'
-local scene = require 'scripts/scene/scene'
-local map = require 'scripts/map/map'
+require "scripts/network/Dbg"
+require "scripts/app"
 
 
 function Start()
-	BaseStart()
+	BaseStart();
 
-	event.init()
-	libnetwork.init()
-	login.init()
-	scene.init()
-	map.init()
+	app.init();
 
-	SampleInitMouseMode(MM_FREE)
+	SampleInitMouseMode(MM_FREE);
 	
-	SubscribeToEvents()
+	SubscribeToEvents();
 
-	libnetwork.encode();
+	app.libnetwork.encode();
 
-	-- scene.addSpaceGeometryMapping()
+	-- app.scene.addSpaceGeometryMapping();
 end
 
 function Stop()
-	event.uninstallEvents()
-	libnetwork.Destroy();
+	app.event.uninstallEvents()
+	app.libnetwork.Destroy();
 end
 
 function SubscribeToEvents()
@@ -41,10 +32,10 @@ function SubscribeToEvents()
 end
 
 function HandleUpdate(eventType, eventData)
-	libnetwork.update(eventType, eventData);
-	scene.update(eventType, eventData);
+	app.libnetwork.update(eventType, eventData);
+	app.scene.update(eventType, eventData);
 end
 
 function HandlePostUpdate(eventType, eventData)
-	scene.post_update(eventType, eventData);
+	app.scene.post_update(eventType, eventData);
 end
