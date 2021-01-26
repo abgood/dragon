@@ -1947,7 +1947,7 @@ end
 KBEngineLua.createAccount_loginapp = function(noconnect)
 	if(noconnect) then
 		this.reset();
-		this._networkInterface:connectTo(this.ip, this.port, this.onConnectTo_createAccount_callback, nil);
+		this._networkInterface:Connect(this.ip, this.port, this.onConnectTo_createAccount_callback, nil);
 	else
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Loginapp_reqCreateAccount"]);

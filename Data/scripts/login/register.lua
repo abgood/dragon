@@ -1,5 +1,6 @@
 
 require "scripts/network/Dbg"
+require "scripts/app"
 
 login.register = {};
 
@@ -63,5 +64,5 @@ login.register.requestRegister = function(self, eventType, eventData)
 		return;
 	end
 
-	login.libnetwork.createAccount(user, pawd, "kbengine_urho3d_demo");
+	app.libnetwork.createAccount(user, pawd, "kbengine_urho3d_demo");
 end

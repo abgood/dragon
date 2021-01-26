@@ -107,7 +107,7 @@
 	</element>
 	<element type="Button">
 		<attribute name="Name" value="returnLoginBtn" />
-		<attribute name="Position" value="-30 220" />
+		<attribute name="Position" value="-50 220" />
 		<attribute name="Size" value="140 30" />
 		<attribute name="Min Anchor" value="1 0" />
 		<attribute name="Max Anchor" value="1 0" />
