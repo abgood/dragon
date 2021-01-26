@@ -4,9 +4,6 @@ local game = require 'scripts/game/game'
 local scene = require 'scripts/scene/scene'
 local libnetwork = require 'scripts/network/KBEngine'
 
-local register = require 'scripts/login/register'
-local reset_password = require 'scripts/login/reset_password'
-
 local login = {}
 setmetatable(login, login)
 
@@ -85,7 +82,6 @@ end
 
 function createLoginUI()
 	logInfo("show login ui");
-
 	local style = cache:GetResource("XMLFile", "UI/DefaultStyle.xml")
 	ui.root.defaultStyle = style
 	
@@ -132,14 +128,14 @@ function showEnterUI(flag)
     SubscribeToEvent(enterUI, "ProgressBarChanged", "changeScrollBar")
 end
 
-function showRegisterUI(eventType, eventData)
-	showLoginUI(false);
-	register.init();
+function showRegisterUI(flag)
+    local loginUI = ui.root:GetChild("registerUI");
+	loginUI:SetVisible(flag);
 end
 
-function showResetPasswordrUI(eventType, eventData)
-	showLoginUI(false);
-	reset_password.init();
+function showResetPasswordrUI(flag)
+    local loginUI = ui.root:GetChild("resetPasswordUI");
+	loginUI:SetVisible(flag);
 end
 
 function requestLogin(eventType, eventData)
