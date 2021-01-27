@@ -19,29 +19,29 @@ app.init = function()
 
 	if (this.libnetwork == nil) then
 		this.libnetwork = require "scripts/network/KBEngine";
+		this.libnetwork.init();
 	end
 
 	if (this.login == nil) then
 		this.login = require "scripts/login/login";
-	end
-
-	if (this.event == nil) then
-		this.event = require "scripts/event/event";
+		this.login.init();
 	end
 
 	if (this.scene == nil) then
 		this.scene = require "scripts/scene/scene";
+		this.scene.init();
 	end
 
 	if (this.map == nil) then
 		this.map = require "scripts/map/map";
+		this.map.init();
 	end
 
-	this.libnetwork.init();
-	this.login.init();
-	this.event.init();
-	this.scene.init();
-	this.map.init();
+	if (this.event == nil) then
+		this.event = require "scripts/event/event";
+		this.event.init();
+	end
+
 end
 
 return app;

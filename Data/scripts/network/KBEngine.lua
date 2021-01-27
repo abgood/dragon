@@ -67,6 +67,7 @@ KBEngineLua.username = "kbengine";
 KBEngineLua.password = "123456";
 
 -- 网络信息
+KBEngineLua.connect_method = "";
 KBEngineLua.currserver = "";
 KBEngineLua.currstate = "";
 
@@ -151,7 +152,15 @@ end
 
 function HandleConnectionStatus(eventType, eventData)
 	if (this.currserver == "") and (this.currstate == "") then
-		this.onLogin_loginapp();
+		if (this.connect_method == "login") then
+			this.onLogin_loginapp();
+		elseif (this.connect_method == "createAccount") then
+			this.onOpenLoginapp_createAccount();
+		elseif (this.connect_method == "resetpassword") then
+			this.onOpenLoginapp_resetpassword();
+		elseif (this.connect_method == "reloginbaseapp") then
+			this.relogin_baseapp();
+		end
 
 	elseif (this.currserver == "loginapp") and (this.currstate == "loginbaseapp") then
 		this.onLogin_baseapp();
@@ -1027,11 +1036,10 @@ KBEngineLua.Client_onCreateAccountResult = function(stream)
 	KBEngineLua.Event.Brocast("onCreateAccountResult", retcode, datas);
 
 	if(retcode ~= 0) then
-		logInfo("KBEngineApp::Client_onCreateAccountResult: " .. KBEngineLua.username .. " create is failed! code=" .. KBEngineLua.serverErrs[retcode].name .. "!");
+		logError("KBEngineApp::Client_onCreateAccountResult: " .. KBEngineLua.username .. " create is failed! error = (" .. this.serverErr(retcode) .. ") !");
 		return;
 	end
 
-	
 	logInfo("KBEngineApp::Client_onCreateAccountResult: " .. KBEngineLua.username .. " create is successfully!");
 end
 
@@ -1644,6 +1652,9 @@ end
 KBEngineLua.login = function( username, password, data )
 	this.Destroy();
 	this.installEvents();
+	this.reset_login_datatypes();
+
+	this.connect_method = "login";
 
 	KBEngineLua.username = username;
 	KBEngineLua.password = password;
@@ -1656,8 +1667,6 @@ end
 KBEngineLua.login_loginapp = function( noconnect )
 	if noconnect then
 		this._networkInterface:Connect(this.ip, this.port, scene_);
-
-		local serverConnection = this._networkInterface:GetServerConnection();
 	else
 		logInfo("KBEngine::login_loginapp(): send login! username=" .. this.username);
 		local bundle = KBEngineLua.Bundle:New();
@@ -1668,16 +1677,6 @@ KBEngineLua.login_loginapp = function( noconnect )
 		bundle:writeString(this.password);
 		bundle:send();
 	end
-end
-
-KBEngineLua.onConnectTo_loginapp_callback = function( ip, port, success, userData)
-	this._lastTickCBTime = os.clock();
-	if not success then
-		logInfo("KBEngine::login_loginapp(): connect ".. ip.. ":"..port.." is error!");  
-		return;
-	end
-			
-	logInfo("KBEngine::login_loginapp(): connect ".. ip.. ":"..port.." success!"); 
 end
 
 KBEngineLua.onLogin_loginapp = function()
@@ -1698,9 +1697,8 @@ end
 -----登录到服务端，登录到网关(baseapp)
 KBEngineLua.login_baseapp = function(noconnect)
 	if(noconnect) then
-		--KBEngineLua.Event.fireOut("onLoginBaseapp", new object[]{});
 		this._networkInterface:Disconnect();
-		this._networkInterface:Connect(this.baseappIP, this.baseappPort, this.onConnectTo_baseapp_callback, nil);
+		this._networkInterface:Connect(this.baseappIP, this.baseappPort, scene_);
 	else
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Baseapp_loginBaseapp"]);
@@ -1708,17 +1706,6 @@ KBEngineLua.login_baseapp = function(noconnect)
 		bundle:writeString(this.password);
 		bundle:send();
 	end
-end
-
-KBEngineLua.onConnectTo_baseapp_callback = function(ip, port, success, userData)
-	this._lastTickCBTime = os.clock();
-	if not success then
-		logInfo("KBEngine::login_baseapp(): connect "..ip..":"..port.." is error!");
-		return;
-	end
-	
-	logInfo("KBEngine::login_baseapp(): connect "..ip..":"..port.." is successfully!");
-
 end
 
 KBEngineLua.onLogin_baseapp = function()
@@ -1807,6 +1794,7 @@ KBEngineLua.reset = function()
 	--KBEngine.Event.clearFiredEvents();
 	KBEngineLua.clearEntities(true);
 
+	this.connect_method = "";
 	this.currserver = "";
 	this.currstate = "";
 	this._serverdatas = VectorBuffer();
@@ -1855,6 +1843,11 @@ end
 
 	--重置密码, 通过loginapp
 KBEngineLua.resetPassword = function(username)
+	this.Destroy();
+	this.installEvents();
+
+	this.connect_method = "resetpassword";
+
 	this.username = username;
 	this.resetpassword_loginapp(true);
 end
@@ -1863,26 +1856,13 @@ end
 	--重置密码, 通过loginapp
 KBEngineLua.resetpassword_loginapp = function(noconnect)
 	if(noconnect) then
-		this.reset();
-		this._networkInterface:connectTo(this.ip, this.port, this.onConnectTo_resetpassword_callback, nil);
+		this._networkInterface:connectTo(this.ip, this.port, scene_);
 	else
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Loginapp_reqAccountResetPassword"]);
 		bundle:writeString(this.username);
 		bundle:send();
 	end
-end
-
-KBEngineLua.onConnectTo_resetpassword_callback = function(ip, port, success, userData)
-	this._lastTickCBTime = os.clock();
-
-	if(not success) then
-		logInfo("KBEngine::resetpassword_loginapp(): connect "..ip..":"..port.." is error!");
-		return;
-	end
-	
-	logInfo("KBEngine::resetpassword_loginapp(): connect "..ip..":"..port.." is success!"); 
-	this.onOpenLoginapp_resetpassword();
 end
 
 KBEngineLua.Client_onReqAccountResetPasswordCB = function(failcode)
@@ -1934,6 +1914,11 @@ KBEngineLua.Client_onReqAccountNewPasswordCB = function(failcode)
 end
 
 KBEngineLua.createAccount = function(username, password, data)
+	this.Destroy();
+	this.installEvents();
+
+	this.connect_method = "createAccount";
+
 	this.username = username;
 	this.password = password;
     this._clientdatas = data;
@@ -1946,8 +1931,7 @@ end
 
 KBEngineLua.createAccount_loginapp = function(noconnect)
 	if(noconnect) then
-		this.reset();
-		this._networkInterface:Connect(this.ip, this.port, this.onConnectTo_createAccount_callback, nil);
+		this._networkInterface:Connect(this.ip, this.port, scene_);
 	else
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Loginapp_reqCreateAccount"]);
@@ -1974,17 +1958,6 @@ KBEngineLua.onOpenLoginapp_createAccount = function()
 	end
 end
 
-KBEngineLua.onConnectTo_createAccount_callback = function(ip, port, success, userData)
-	this._lastTickCBTime = os.clock();
-
-	if( not success) then
-		logInfo("KBEngine::createAccount_loginapp(): connect "..ip..":"..port.." is error!");
-		return;
-	end
-	
-	logInfo("KBEngine::createAccount_loginapp(): connect "..ip..":"..port.." is success!"); 
-	this.onOpenLoginapp_createAccount();
-end
 
 
 --	引擎版本不匹配
@@ -2024,18 +1997,11 @@ end
 --	一些移动类应用容易掉线，可以使用该功能快速的重新与服务端建立通信
 
 KBEngineLua.reLoginBaseapp = function()
-	--KBEngineLua.Event.fireAll("onReloginBaseapp", new object[]{end);
-	this._networkInterface:connectTo(this.baseappIP, this.baseappPort, this.onReConnectTo_baseapp_callback, nil);
+	this.connect_method = "reloginbaseapp";
+	this._networkInterface:Connect(this.baseappIP, this.baseappPort, scene_);
 end
 
-KBEngineLua.onReConnectTo_baseapp_callback = function(ip, port, success, userData)
-
-	if not success then
-		logInfo("KBEngine::reLoginBaseapp(): connect "..ip..":"..port.." is error!");
-		return;
-	end
-	
-	logInfo("KBEngine::relogin_baseapp(): connect "..ip..":"..port.." is successfully!");
+KBEngineLua.relogin_baseapp = function()
 
 	local bundle = KBEngineLua.Bundle:New();
 	bundle:newMessage(KBEngineLua.messages["Baseapp_reLoginBaseapp"]);

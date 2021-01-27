@@ -3,12 +3,12 @@ login = {};
 
 local this = login;
 local register = nil;
+local create_player = nil;
 
 require "scripts/network/Dbg"
 require "scripts/app"
 require "scripts/login/register"
-
-account_id = 3;
+require "scripts/login/create_player"
 
 
 login.init = function()
@@ -30,6 +30,7 @@ end
 
 login.onReqAvatarList = function(avatars)
 	value = avatars["values"];
+	logDbg("login.onReqAvatarList: avatars number(" .. #value .. ")");
 
 	if (#value <= 0) then
 		this.showCreatePlayerUI(true);
@@ -48,9 +49,31 @@ login.onCreateAvatarResult = function(retcode, info, avatars)
 	end
 end
 
+login.onCreateAccountResult = function(retcode, datas)
+	logDbg("login.onCreateAccountResult: retcode(" .. retcode .. ")");
+	if (retcode == 0) then
+		logInfo("CreateAccount is successfully!(注册账号成功!)");
+
+		register:showRegisterUI(false);
+		this.showLoginUI(true);
+	else
+		logError("CreateAccount is error(注册账号错误)! err=(" .. retcode .. ")");
+	end
+end
+
 login.showCreatePlayerUI = function(flag)
 	if flag then
-		app.libnetwork.player():reqCreateAvatar(account_id, "june_" .. tostring(account_id));
+		if (create_player == nil) then
+			create_player = login.create_player:New();
+			create_player:init();
+		else
+			create_player:show_create_player_UI(true);
+		end
+	else
+		if (create_player == nil) then
+			create_player = login.create_player:New();
+		end
+		create_player:show_create_player_UI(false);
 	end
 end
 

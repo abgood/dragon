@@ -573,20 +573,24 @@ KBEngineLua.datatypes["UNICODE"]	= KBEngineLua.DATATYPE_UNICODE;
 KBEngineLua.datatypes["ENTITYCALL"]	= KBEngineLua.DATATYPE_ENTITYCALL;
 KBEngineLua.datatypes["BLOB"]		= KBEngineLua.DATATYPE_BLOB;
 
-KBEngineLua.datatypes[1] = KBEngineLua.datatypes["STRING"];
-KBEngineLua.datatypes[2] = KBEngineLua.datatypes["UINT8"];
-KBEngineLua.datatypes[3] = KBEngineLua.datatypes["UINT16"];
-KBEngineLua.datatypes[4] = KBEngineLua.datatypes["UINT32"];
-KBEngineLua.datatypes[5] = KBEngineLua.datatypes["UINT64"];
-KBEngineLua.datatypes[6] = KBEngineLua.datatypes["INT8"];
-KBEngineLua.datatypes[7] = KBEngineLua.datatypes["INT16"];
-KBEngineLua.datatypes[8] = KBEngineLua.datatypes["INT32"];
-KBEngineLua.datatypes[9] = KBEngineLua.datatypes["INT64"];
-KBEngineLua.datatypes[10] = KBEngineLua.datatypes["PYTHON"];
-KBEngineLua.datatypes[11] = KBEngineLua.datatypes["BLOB"];
-KBEngineLua.datatypes[12] = KBEngineLua.datatypes["UNICODE"];
-KBEngineLua.datatypes[13] = KBEngineLua.datatypes["FLOAT"];
-KBEngineLua.datatypes[14] = KBEngineLua.datatypes["DOUBLE"];
-KBEngineLua.datatypes[15] = KBEngineLua.datatypes["VECTOR2"];
-KBEngineLua.datatypes[16] = KBEngineLua.datatypes["VECTOR3"];
-KBEngineLua.datatypes[17] = KBEngineLua.datatypes["VECTOR4"];
+KBEngineLua.reset_login_datatypes = function()
+
+	KBEngineLua.datatypes[1] = KBEngineLua.datatypes["STRING"];
+	KBEngineLua.datatypes[2] = KBEngineLua.datatypes["UINT8"];
+	KBEngineLua.datatypes[3] = KBEngineLua.datatypes["UINT16"];
+	KBEngineLua.datatypes[4] = KBEngineLua.datatypes["UINT32"];
+	KBEngineLua.datatypes[5] = KBEngineLua.datatypes["UINT64"];
+	KBEngineLua.datatypes[6] = KBEngineLua.datatypes["INT8"];
+	KBEngineLua.datatypes[7] = KBEngineLua.datatypes["INT16"];
+	KBEngineLua.datatypes[8] = KBEngineLua.datatypes["INT32"];
+	KBEngineLua.datatypes[9] = KBEngineLua.datatypes["INT64"];
+	KBEngineLua.datatypes[10] = KBEngineLua.datatypes["PYTHON"];
+	KBEngineLua.datatypes[11] = KBEngineLua.datatypes["BLOB"];
+	KBEngineLua.datatypes[12] = KBEngineLua.datatypes["UNICODE"];
+	KBEngineLua.datatypes[13] = KBEngineLua.datatypes["FLOAT"];
+	KBEngineLua.datatypes[14] = KBEngineLua.datatypes["DOUBLE"];
+	KBEngineLua.datatypes[15] = KBEngineLua.datatypes["VECTOR2"];
+	KBEngineLua.datatypes[16] = KBEngineLua.datatypes["VECTOR3"];
+	KBEngineLua.datatypes[17] = KBEngineLua.datatypes["VECTOR4"];
+
+end

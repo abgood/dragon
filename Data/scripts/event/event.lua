@@ -15,6 +15,7 @@ event.installEvents = function()
 	app.libnetwork.Event.AddListener("onLoginSuccessfully", app.login.onLoginSuccessfully);
 	app.libnetwork.Event.AddListener("onReqAvatarList", app.login.onReqAvatarList);
 	app.libnetwork.Event.AddListener("onCreateAvatarResult", app.login.onCreateAvatarResult);
+	app.libnetwork.Event.AddListener("onCreateAccountResult", app.login.onCreateAccountResult);
 
 	app.libnetwork.Event.AddListener("set_direction", app.scene.set_direction);
 	app.libnetwork.Event.AddListener("set_position", app.scene.set_position);
@@ -26,6 +27,8 @@ end
 event.uninstallEvents = function()
 	app.libnetwork.Event.RemoveListener("onLoginSuccessfully", app.login.onLoginSuccessfully);
 	app.libnetwork.Event.RemoveListener("onReqAvatarList", app.login.onReqAvatarList);
+	app.libnetwork.Event.RemoveListener("onCreateAvatarResult", app.login.onCreateAvatarResult);
+	app.libnetwork.Event.RemoveListener("onCreateAccountResult", app.login.onCreateAccountResult);
 
 	app.libnetwork.Event.RemoveListener("set_direction", app.scene.set_direction);
 	app.libnetwork.Event.RemoveListener("set_position", app.scene.set_position);
