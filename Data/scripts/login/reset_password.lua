@@ -1,172 +1,59 @@
+
 require "scripts/network/Dbg"
+require "scripts/app"
 
-local game = require 'scripts/game/game'
-local scene = require 'scripts/scene/scene'
-local libnetwork = require 'scripts/network/KBEngine'
+login.reset_password = {};
 
-local login = {}
-setmetatable(login, login)
-
-local mt = {}
-
-login.__index = mt
-
---- 继承game
-setmetatable(mt, game)
-
-mt.id = 'l_0001'
-mt.type = 'login'
-mt.name = 'login'
-
-
-account_id = 2;
-
-
-function login.init()
-	logInfo(login:get_type() .. " init");
-	createLoginUI()
+login.reset_password.New = function(self, me)
+	me = me or {};
+	setmetatable(me, self);
+	self.__index = self;
+    return me;  
 end
 
-function login.onLoginSuccessfully(rndUUID, eid, accountEntity)
-	logInfo("Login is successfully!(登陆成功!)");
-
-	local enterUI = ui:LoadLayout(cache:GetResource("XMLFile", "UI/login/enter.xml"))
-	ui.root:AddChild(enterUI)
-
-	showLoginUI(false);
-	showEnterUI(true);
-
-	coroutine.start(setbar)
+login.reset_password.init = function(self)
+	logInfo("reset_password init");
+	self:reset_password_UI();
 end
 
-function login.onReqAvatarList(avatars)
-	value = avatars["values"];
+login.reset_password.reset_password_UI = function(self)
+	logInfo("show reset_password ui");
 
-	if (#value <= 0) then
-		showCreatePlayerUI(true)
-	else
-		showPlayerInfoUI(value[1]);
-	end
-end
+	local layoutRoot = ui:LoadLayout(cache:GetResource("XMLFile", "UI/login/reset_password.xml"));
+	ui.root:AddChild(layoutRoot);
 
-function login.onCreateAvatarResult(retcode, info, avatars)
-	logDbg("login.onCreateAvatarResult: retcode(" .. info["dbid"] .. "), " .. "name(" .. info["name"] .. "), " .. "roleType(" .. info["roleType"] .. "), " .. "level(" .. info["level"] .. "), ");
-	if (retcode == 0) then
-		showCreatePlayerUI(false)
-		libnetwork.player():selectAvatarGame(info["dbid"]);
-
-		scene.enter_scene();
-	end
-end
-
-function showCreatePlayerUI(flag)
-	if flag then
-		libnetwork.player():reqCreateAvatar(account_id, "june_" .. tostring(account_id));
-	end
-end
-
-function showPlayerInfoUI(info)
-	logDbg("show player info, dbid:(" .. info["dbid"] .. "), name:(" .. info["name"] .. ")");
-	libnetwork.player():selectAvatarGame(info["dbid"]);
-
-	scene.enter_scene();
-end
-
-function setbar()
-    local enterUI = ui.root:GetChild("enterUI");
-	for i = 1, enterUI.range do
-		enterUI:ChangeValue(1);
-		coroutine.sleep(0.1)
-	end
-end
-
-function createLoginUI()
-	logInfo("show login ui");
-	local style = cache:GetResource("XMLFile", "UI/DefaultStyle.xml")
-	ui.root.defaultStyle = style
-	
-	local cursor = ui.root:CreateChild("Cursor")
-	cursor:SetStyleAuto()
-	ui.cursor = cursor
-	cursor:SetPosition(graphics.width / 2, graphics.height / 2)
-	
-	local layoutRoot = ui:LoadLayout(cache:GetResource("XMLFile", "UI/login/login.xml"))
-	ui.root:AddChild(layoutRoot)
-
-	showLoginUI(true)
-
-    local pawdEdit = layoutRoot:GetChild("pawd_edit", true)
-	pawdEdit.echoCharacter = 42
-
-	local button = layoutRoot:GetChild("loginBtn", true)
+	local button = layoutRoot:GetChild("resetPasswordBtn", true);
 	if button ~= nil then
-	    SubscribeToEvent(button, "Released", "requestLogin")
+	    SubscribeToEvent(button, "Released", "login.reset_password.request_reset_password");
 	end
 
-	local button = layoutRoot:GetChild("registerBtn", true)
+	local button = layoutRoot:GetChild("returnLoginBtn", true);
 	if button ~= nil then
-	    SubscribeToEvent(button, "Released", "showRegisterUI")
-	end
-
-	local button = layoutRoot:GetChild("resetBtn", true)
-	if button ~= nil then
-	    SubscribeToEvent(button, "Released", "showResetPasswordrUI")
+	    SubscribeToEvent(button, "Released", "login.reset_password.showLoginUIByCreatePlayerUI");
 	end
 end
 
-function showLoginUI(flag)
-    local loginUI = ui.root:GetChild("loginUI");
-	loginUI:SetVisible(flag);
+login.reset_password.showLoginUIByCreatePlayerUI = function(self, eventType, eventData)
+	login.reset_password.show_reset_password_UI(false);
+	login.showLoginUI(true);
 end
 
-function showEnterUI(flag)
-    local enterUI = ui.root:GetChild("enterUI");
-	enterUI:SetVisible(flag);
-    enterUI:SetWidth(ui.root.width);
-	enterUI.value = 0;
-	enterUI.range = 100;
-    SubscribeToEvent(enterUI, "ProgressBarChanged", "changeScrollBar")
+login.reset_password.show_reset_password_UI = function(self, flag)
+    local resetPasswordUI = ui.root:GetChild("resetPasswordUI");
+	resetPasswordUI:SetVisible(flag);
 end
 
-function showRegisterUI(flag)
-    local loginUI = ui.root:GetChild("registerUI");
-	loginUI:SetVisible(flag);
-end
-
-function showResetPasswordrUI(flag)
-    local loginUI = ui.root:GetChild("resetPasswordUI");
-	loginUI:SetVisible(flag);
-end
-
-function requestLogin(eventType, eventData)
-	local layoutRoot = ui.root:GetChild("loginUI")
+login.reset_password.request_reset_password = function(self, eventType, eventData)
+	local layoutRoot = ui.root:GetChild("resetPasswordUI")
     local userEdit = layoutRoot:GetChild("user_edit", true)
-    local pawdEdit = layoutRoot:GetChild("pawd_edit", true)
 
 	user = userEdit.text;
-	pawd = pawdEdit.text;
-	logDbg("request login: " .. "username(" .. user .. "), " .. "password(" .. pawd .. ")")
+	logDbg("request reset_password: " .. "account_name(" .. user .. ")");
 
 	if (#user <= 0) then
 		logInfo("please input username");
 		return;
 	end
-	if (#pawd <= 0) then
-		logInfo("please input password");
-		return;
-	end
 
-	libnetwork.login(user, pawd, "kbengine_urho3d_demo");
+	app.libnetwork.resetPassword(user);
 end
-
-function changeScrollBar(eventType, eventData)
-	local enterUI = eventData["Element"]:GetPtr("UIElement")
-	local value = eventData["Value"]:GetFloat()
-
-	if (value == enterUI.range) then
-		showEnterUI(false);
-	end
-end
-
-
-return login

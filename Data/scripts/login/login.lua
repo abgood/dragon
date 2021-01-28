@@ -4,11 +4,15 @@ login = {};
 local this = login;
 local register = nil;
 local create_player = nil;
+local reset_password = nil;
+local input_password = nil;
 
 require "scripts/network/Dbg"
 require "scripts/app"
 require "scripts/login/register"
 require "scripts/login/create_player"
+require "scripts/login/reset_password"
+require "scripts/login/input_password"
 
 
 login.init = function()
@@ -61,6 +65,18 @@ login.onCreateAccountResult = function(retcode, datas)
 	end
 end
 
+login.onResetPassword = function(retcode)
+	logDbg("login.onReqAccountResetPasswordResult: retcode(" .. retcode .. ")");
+	if (retcode == 0) then
+		logInfo("onReqAccountResetPassword is successfully!(请求开始重置密码成功!)");
+
+		reset_password:show_reset_password_UI(false);
+		this.showInputPasswordUI(true);
+	else
+		logError("onReqAccountResetPassword is error(请求开始重置密码错误)! err=(" .. retcode .. ")");
+	end
+end
+
 login.showCreatePlayerUI = function(flag)
 	if flag then
 		if (create_player == nil) then
@@ -74,6 +90,22 @@ login.showCreatePlayerUI = function(flag)
 			create_player = login.create_player:New();
 		end
 		create_player:show_create_player_UI(false);
+	end
+end
+
+login.showInputPasswordUI = function(flag)
+	if flag then
+		if (input_password == nil) then
+			input_password = login.input_password:New();
+			input_password:init();
+		else
+			input_password:show_input_password_UI(true);
+		end
+	else
+		if (input_password == nil) then
+			input_password = login.input_password:New();
+		end
+		input_password:show_input_password_UI(false);
 	end
 end
 
@@ -161,7 +193,15 @@ end
 
 login.showResetPasswordrUI = function(eventType, eventData)
 	this.showLoginUI(false);
+
+	if (reset_password == nil) then
+		reset_password = login.reset_password:New();
+		reset_password:init();
+	else
+		reset_password:show_reset_password_UI(true);
+	end
 end
+
 
 login.showLoginUI = function(flag)
     local loginUI = ui.root:GetChild("loginUI");

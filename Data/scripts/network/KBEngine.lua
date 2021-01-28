@@ -1845,6 +1845,7 @@ end
 KBEngineLua.resetPassword = function(username)
 	this.Destroy();
 	this.installEvents();
+	this.reset_login_datatypes();
 
 	this.connect_method = "resetpassword";
 
@@ -1856,7 +1857,7 @@ end
 	--重置密码, 通过loginapp
 KBEngineLua.resetpassword_loginapp = function(noconnect)
 	if(noconnect) then
-		this._networkInterface:connectTo(this.ip, this.port, scene_);
+		this._networkInterface:Connect(this.ip, this.port, scene_);
 	else
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Loginapp_reqAccountResetPassword"]);
@@ -1866,8 +1867,11 @@ KBEngineLua.resetpassword_loginapp = function(noconnect)
 end
 
 KBEngineLua.Client_onReqAccountResetPasswordCB = function(failcode)
+
+	KBEngineLua.Event.Brocast("onResetPassword", failcode);
+
 	if(failcode ~= 0) then
-		logInfo("KBEngine::Client_onReqAccountResetPasswordCB: " .. this.username .. " is failed! code=" .. failcode .. "!");
+		logError("KBEngine::Client_onReqAccountResetPasswordCB: " .. this.username .. " is failed! error = (" .. this.serverErr(failcode) .. ") !");
 		return;
 	end
 	logInfo("KBEngine::Client_onReqAccountResetPasswordCB: " .. this.username .. " is successfully!");
@@ -1896,6 +1900,7 @@ end
 ----设置新密码，通过baseapp， 必须玩家登录在线操作所以是baseapp。
 
 KBEngineLua.newPassword = function(old_password, new_password)
+	print ("lj new", old_password, new_password, this.entity_id);
 	local bundle = KBEngineLua.Bundle:New();
 	bundle:newMessage(KBEngineLua.messages["Baseapp_reqAccountNewPassword"]);
 	bundle:writeInt32(this.entity_id);
