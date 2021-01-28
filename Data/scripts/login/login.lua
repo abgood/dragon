@@ -143,6 +143,9 @@ login.createLoginUI = function()
     local pawdEdit = layoutRoot:GetChild("pawd_edit", true);
 	pawdEdit.echoCharacter = 42;
 
+    local resetBtn = layoutRoot:GetChild("resetBtn", true);
+	resetBtn.enabled = false;
+
 	local button = layoutRoot:GetChild("loginBtn", true);
 	if button ~= nil then
 	    SubscribeToEvent(button, "Released", "login.requestLogin");

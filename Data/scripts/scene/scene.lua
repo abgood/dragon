@@ -155,7 +155,7 @@ scene.post_update = function(eventType, eventData)
 	cameraNode.rotation = dir;
 end
 
-create_avatar_enter_world = function()
+scene.create_avatar_enter_world = function()
 	local obj = this.player:create_avatar();
 	this.entities[this.player.id] = obj;
 end
