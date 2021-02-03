@@ -22,6 +22,8 @@ login.create_player.create_player_UI = function(self)
 	local layoutRoot = ui:LoadLayout(cache:GetResource("XMLFile", "UI/login/create_player.xml"));
 	ui.root:AddChild(layoutRoot);
 
+	local userEdit = layoutRoot:GetChild("user_edit", true);
+	userEdit:SetFocus(true);
 	local button = layoutRoot:GetChild("createPlayerBtn", true);
 	if button ~= nil then
 	    SubscribeToEvent(button, "Released", "login.create_player.request_create_player");
@@ -39,8 +41,26 @@ login.create_player.showLoginUIByCreatePlayerUI = function(self, eventType, even
 end
 
 login.create_player.show_create_player_UI = function(self, flag)
-    local createPlayerUI = ui.root:GetChild("createPlayerUI");
+	local createPlayerUI = ui.root:GetChild("createPlayerUI");
 	createPlayerUI:SetVisible(flag);
+
+	if (not flag) then
+		app.libnetwork.Event.RemoveListener("HandleCreatePlayerReturnKeyUp", app.login.addCreatePlayerHandleReturnKeyUp);
+	end
+end
+
+login.create_player.is_show = function()
+	local flag = false;
+
+	local createPlayerUI = ui.root:GetChild("createPlayerUI");
+	if (createPlayerUI) then
+		flag = createPlayerUI:IsVisible();
+	end
+	return flag;
+end
+
+login.create_player.HandleReturnKeyUp = function(eventType, eventData)
+	login.create_player.request_create_player(eventType, eventData);
 end
 
 login.create_player.request_create_player = function(self, eventType, eventData)

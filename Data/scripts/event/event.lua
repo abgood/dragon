@@ -23,6 +23,8 @@ event.installEvents = function()
 	app.libnetwork.Event.AddListener("onEnterWorld", app.scene.onEnterWorld);
 	app.libnetwork.Event.AddListener("addSpaceGeometryMapping", app.scene.addSpaceGeometryMapping);
 	app.libnetwork.Event.AddListener("onAvatarEnterWorld", app.scene.onAvatarEnterWorld);
+
+	app.libnetwork.Event.AddListener("HandleReturnKeyUp", event.HandleReturnKeyUp);
 end
 
 event.uninstallEvents = function()
@@ -37,6 +39,30 @@ event.uninstallEvents = function()
 	app.libnetwork.Event.RemoveListener("onEnterWorld", app.scene.onEnterWorld);
 	app.libnetwork.Event.RemoveListener("addSpaceGeometryMapping", app.scene.addSpaceGeometryMapping);
 	app.libnetwork.Event.RemoveListener("onAvatarEnterWorld", app.scene.onAvatarEnterWorld);
+
+	app.libnetwork.Event.RemoveListener("HandleReturnKeyUp", event.HandleReturnKeyUp);
+end
+
+event.HandleReturnKeyUp = function(eventType, eventData)
+	local b_register_show = false;
+	local b_create_plaer_show = false;
+
+	if (app.login.register) then
+		b_register_show = app.login.register.is_show();
+	end
+	if (app.login.create_player) then
+		b_create_plaer_show = app.login.create_player.is_show();
+	end
+
+	if (app.login and app.login.is_show()) then
+		app.libnetwork.Event.Brocast("HandleLoginReturnKeyUp", eventType, eventData);
+
+	elseif (b_register_show) then
+		app.libnetwork.Event.Brocast("HandleRegisterReturnKeyUp", eventType, eventData);
+
+	elseif (b_create_plaer_show) then
+		app.libnetwork.Event.Brocast("HandleCreatePlayerReturnKeyUp", eventType, eventData);
+	end
 end
 
 

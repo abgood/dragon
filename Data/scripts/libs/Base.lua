@@ -20,8 +20,12 @@ end
 function HandleKeyUp(eventType, eventData)
 	local key = eventData["Key"]:GetInt();
 
-	if key == KEY_ESCAPE then
+	if (key == KEY_ESCAPE) then
 		engine:Exit();
+
+	elseif (key == KEY_RETURN) then
+		app.libnetwork.Event.Brocast("HandleReturnKeyUp", eventType, eventData);
+
 	end
 end
 

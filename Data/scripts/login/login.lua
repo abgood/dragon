@@ -117,7 +117,7 @@ login.showPlayerInfoUI = function(info)
 end
 
 login.setbar = function()
-    local enterUI = ui.root:GetChild("enterUI");
+	local enterUI = ui.root:GetChild("enterUI");
 	for i = 1, enterUI.range do
 		enterUI:ChangeValue(1);
 		coroutine.sleep(0.1);
@@ -129,43 +129,45 @@ login.createLoginUI = function()
 
 	local style = cache:GetResource("XMLFile", "UI/DefaultStyle.xml");
 	ui.root.defaultStyle = style;
-	
+
 	local cursor = ui.root:CreateChild("Cursor");
 	cursor:SetStyleAuto();
 	ui.cursor = cursor;
 	cursor:SetPosition(graphics.width / 2, graphics.height / 2);
-	
+
 	local layoutRoot = ui:LoadLayout(cache:GetResource("XMLFile", "UI/login/login.xml"));
 	ui.root:AddChild(layoutRoot);
 
 	this.showLoginUI(true);
 
+	local userEdit = layoutRoot:GetChild("user_edit", true);
+	userEdit:SetFocus(true);
     local pawdEdit = layoutRoot:GetChild("pawd_edit", true);
 	pawdEdit.echoCharacter = 42;
 
-    local resetBtn = layoutRoot:GetChild("resetBtn", true);
+	local resetBtn = layoutRoot:GetChild("resetBtn", true);
 	resetBtn.enabled = false;
 
 	local button = layoutRoot:GetChild("loginBtn", true);
 	if button ~= nil then
-	    SubscribeToEvent(button, "Released", "login.requestLogin");
+		SubscribeToEvent(button, "Released", "login.requestLogin");
 	end
 
 	local button = layoutRoot:GetChild("registerBtn", true);
 	if button ~= nil then
-	    SubscribeToEvent(button, "Released", "login.showRegisterUI");
+		SubscribeToEvent(button, "Released", "login.showRegisterUI");
 	end
 
 	local button = layoutRoot:GetChild("resetBtn", true);
 	if button ~= nil then
-	    SubscribeToEvent(button, "Released", "login.showResetPasswordrUI");
+		SubscribeToEvent(button, "Released", "login.showResetPasswordrUI");
 	end
 end
 
 login.requestLogin = function(eventType, eventData)
 	local layoutRoot = ui.root:GetChild("loginUI");
-    local userEdit = layoutRoot:GetChild("user_edit", true);
-    local pawdEdit = layoutRoot:GetChild("pawd_edit", true);
+	local userEdit = layoutRoot:GetChild("user_edit", true);
+	local pawdEdit = layoutRoot:GetChild("pawd_edit", true);
 
 	user = userEdit.text;
 	pawd = pawdEdit.text;
@@ -205,19 +207,43 @@ login.showResetPasswordrUI = function(eventType, eventData)
 	end
 end
 
-
 login.showLoginUI = function(flag)
-    local loginUI = ui.root:GetChild("loginUI");
+	local loginUI = ui.root:GetChild("loginUI");
 	loginUI:SetVisible(flag);
+
+	if (flag) then
+		app.libnetwork.Event.AddListener("HandleLoginReturnKeyUp", this.HandleReturnKeyUp);
+		app.libnetwork.Event.AddListener("HandleRegisterReturnKeyUp", this.addRegisterHandleReturnKeyUp);
+		app.libnetwork.Event.AddListener("HandleCreatePlayerReturnKeyUp", this.addCreatePlayerHandleReturnKeyUp);
+	else
+		app.libnetwork.Event.RemoveListener("HandleLoginReturnKeyUp", this.HandleReturnKeyUp);
+	end
+end
+
+login.addRegisterHandleReturnKeyUp = function()
+	if (register) then
+		register.HandleReturnKeyUp(nil, nil);
+	end
+end
+
+login.addCreatePlayerHandleReturnKeyUp = function()
+	if (create_player) then
+		create_player.HandleReturnKeyUp(nil, nil);
+	end
+end
+
+login.is_show = function()
+	local loginUI = ui.root:GetChild("loginUI");
+	return loginUI:IsVisible();
 end
 
 login.showEnterUI = function(flag)
-    local enterUI = ui.root:GetChild("enterUI");
+	local enterUI = ui.root:GetChild("enterUI");
 	enterUI:SetVisible(flag);
-    enterUI:SetWidth(ui.root.width);
+	enterUI:SetWidth(ui.root.width);
 	enterUI.value = 0;
 	enterUI.range = 100;
-    SubscribeToEvent(enterUI, "ProgressBarChanged", "login.changeScrollBar")
+	SubscribeToEvent(enterUI, "ProgressBarChanged", "login.changeScrollBar");
 end
 
 login.changeScrollBar = function(eventType, eventData)
@@ -229,4 +255,9 @@ login.changeScrollBar = function(eventType, eventData)
 	end
 end
 
-return login
+login.HandleReturnKeyUp = function(eventType, eventData)
+	this.requestLogin(eventType, eventData);
+end
+
+
+return login;

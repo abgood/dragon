@@ -22,6 +22,8 @@ login.register.createRegisterUI = function(self)
 	local layoutRoot = ui:LoadLayout(cache:GetResource("XMLFile", "UI/login/register.xml"));
 	ui.root:AddChild(layoutRoot);
 
+	local userEdit = layoutRoot:GetChild("user_edit", true);
+	userEdit:SetFocus(true);
     local pawdEdit = layoutRoot:GetChild("pawd_edit", true);
 	pawdEdit.echoCharacter = 42;
 
@@ -42,8 +44,26 @@ login.register.showLoginUIByRegisterUI = function(self, eventType, eventData)
 end
 
 login.register.showRegisterUI = function(self, flag)
-    local registerUI = ui.root:GetChild("registerUI");
+	local registerUI = ui.root:GetChild("registerUI");
 	registerUI:SetVisible(flag);
+
+	if (not flag) then
+		app.libnetwork.Event.RemoveListener("HandleRegisterReturnKeyUp", app.login.addRegisterHandleReturnKeyUp);
+	end
+end
+
+login.register.is_show = function()
+	local flag = false;
+
+	local registerUI = ui.root:GetChild("registerUI");
+	if (registerUI) then
+		flag = registerUI:IsVisible();
+	end
+	return flag;
+end
+
+login.register.HandleReturnKeyUp = function(eventType, eventData)
+	login.register.requestRegister(eventType, eventData);
 end
 
 login.register.requestRegister = function(self, eventType, eventData)

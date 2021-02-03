@@ -198,6 +198,7 @@ end
 
 KBEngineLua.Destroy = function()
 	logInfo("KBEngine::destroy()");
+	this.logout_baseapp();
 	this.reset();
 	this.resetMessages();
 
@@ -1189,9 +1190,9 @@ KBEngineLua.clearEntities = function(isAll)
 			if(eid ~= entity.id) then
 				if(KBEngineLua.entities[eid].inWorld) then
 			    	KBEngineLua.entities[eid]:leaveWorld();
-			    end
-			    
-			    KBEngineLua.entities[eid]:onDestroy();
+				end
+
+				KBEngineLua.entities[eid]:onDestroy();
 			end
 		end  
 			
@@ -1201,11 +1202,11 @@ KBEngineLua.clearEntities = function(isAll)
 		for eid, e in pairs(KBEngineLua.entities) do
 			if(KBEngineLua.entities[eid].inWorld) then
 		    	KBEngineLua.entities[eid]:leaveWorld();
-		    end
-		    
-		    KBEngineLua.entities[eid]:onDestroy();
+			end
+
+			KBEngineLua.entities[eid]:onDestroy();
 		end  
-			
+
 		KBEngineLua.entities = {};
 	end
 end
@@ -1221,7 +1222,7 @@ KBEngineLua.Client_initSpaceData = function(stream)
 		local value = stream:ReadString();
 		KBEngineLua.Client_setSpaceData(KBEngineLua.spaceID, key, value);
 	end
-	
+
 	logInfo("KBEngineApp::Client_initSpaceData: spaceID(" .. KBEngineLua.spaceID .. "), datas(" .. KBEngineLua.spacedata["_mapping"] .. ")!");
 end
 
@@ -1234,14 +1235,14 @@ KBEngineLua.Client_setSpaceData = function(spaceID, key, value)
 	if(key == "_mapping") then
 		KBEngineLua.addSpaceGeometryMapping(spaceID, value);
     end
-	
+
 	--KBEngine.Event.fire("onSetSpaceData", spaceID, key, value);
 end
 
 KBEngineLua.Client_delSpaceData = function(spaceID, key)
 
 	logInfo("KBEngineApp::Client_delSpaceData: spaceID(" .. spaceID .. "), key(" .. key .. ")!");
-	
+
 	KBEngineLua.spacedata[key] = nil;
 	KBEngineLua.Event.Brocast("onDelSpaceData", spaceID, key);
 end
@@ -1694,6 +1695,17 @@ KBEngineLua.onLogin_loginapp = function()
 	end
 end
 
+-----登出到服务端，登出到网关(baseapp)
+KBEngineLua.logout_baseapp = function()
+	if (this.entity_id > 0) then
+		local bundle = KBEngineLua.Bundle:New();
+		bundle:newMessage(KBEngineLua.messages["Baseapp_logoutBaseapp"]);
+		bundle:writeUint64(this.entity_uuid);
+		bundle:writeInt32(this.entity_id);
+		bundle:send();
+	end
+end
+
 -----登录到服务端，登录到网关(baseapp)
 KBEngineLua.login_baseapp = function(noconnect)
 	if(noconnect) then
@@ -2065,7 +2077,7 @@ KBEngineLua.sendTick = function()
 		-- 此时应该通知客户端掉线了
 		if(span < 0) then
 			logInfo("sendTick: Receive appTick timeout!");
-			this._networkInterface:close();
+			this._networkInterface:Disconnect();
 			return;
 		end
 

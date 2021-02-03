@@ -144,7 +144,7 @@ KBEngineLua.Entity.cellCall = function(self, ...)
 end
 
 KBEngineLua.Entity.enterWorld = function(self)
-	--logInfo(self.className .. '::enterWorld: ' .. self.id); 
+	logInfo(self.className .. '::enterWorld: ' .. self.id); 
 	self.inWorld = true;
 	self:onEnterWorld();
 	
@@ -155,7 +155,7 @@ KBEngineLua.Entity.onEnterWorld = function(self)
 end
 	
 KBEngineLua.Entity.leaveWorld = function(self)
-	--logInfo(self.className .. '::leaveWorld: ' .. self.id); 
+	logInfo(self.className .. '::leaveWorld: ' .. self.id); 
 	self.inWorld = false;
 	self.onLeaveWorld();
 	
