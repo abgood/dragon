@@ -595,18 +595,6 @@ KBEngineLua.readBlob = function(stream)
 	return datas:ReadString();
 end
 
-KBEngineLua.readPackXZ = function(stream)
-	v1 = stream:ReadUByte();
-	v2 = stream:ReadUByte();
-	v3 = stream:ReadUByte();
-	print ("lj xz", v1, v2, v3);
-end
-
-KBEngineLua.readPackY = function(stream)
-	v = stream:ReadUShort();
-	print ("lj y", v);
-end
-
 KBEngineLua.onImportServerErrorsDescr = function(stream)
 	local size = stream:ReadUShort();
 	while size > 0
@@ -1081,7 +1069,7 @@ KBEngineLua.updatePlayerToServer = function()
 	local now = os.clock();
 
 	local span = now - this._lastUpdateToServerTime; 
-	if(span < 0.05) then
+	if(span < 1.0) then
 		return;
 	end
 
@@ -1091,10 +1079,10 @@ KBEngineLua.updatePlayerToServer = function()
 		return;
     end
 
-    this._lastUpdateToServerTime = now - (span - 0.05);
 
-    --logInfo(player.position.x .. " " .. player.position.y);
-	if(Vector3.Length(player._entityLastLocalPos, player.position) > 0.001 or Vector3.Length(player._entityLastLocalDir, player.direction) > 0.001) then
+	this._lastUpdateToServerTime = now - (span - 1.0);
+
+	if ((player._entityLastLocalPos - player.position):Length() > 0.01 or (player._entityLastLocalDir - player.direction):Length() > 0.01) then
 	
 		-- 记录玩家最后一次上报位置时自身当前的位置
 		player._entityLastLocalPos.x = player.position.x;
@@ -1337,259 +1325,275 @@ end
 KBEngineLua.Client_onUpdateData_ypr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local y = stream:ReadByte();
-	local p = stream:ReadByte();
-	local r = stream:ReadByte();
-	
+
+	local y = stream:ReadFloat();
+	local p = stream:ReadFloat();
+	local r = stream:ReadFloat();
+
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, y, p, r, -1);
 end
 
 KBEngineLua.Client_onUpdateData_yp = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local y = stream:ReadByte();
-	local p = stream:ReadByte();
-	
+
+	local y = stream:ReadFloat();
+	local p = stream:ReadFloat();
+
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, y, p, KBEngineLua.KBE_FLT_MAX, -1);
 end
 
 KBEngineLua.Client_onUpdateData_yr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local y = stream:ReadByte();
-	local r = stream:ReadByte();
-	
+
+	local y = stream:ReadFloat();
+	local r = stream:ReadFloat();
+
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, y, KBEngineLua.KBE_FLT_MAX, r, -1);
 end
 
 KBEngineLua.Client_onUpdateData_pr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local p = stream:ReadByte();
-	local r = stream:ReadByte();
-	
+
+	local p = stream:ReadFloat();
+	local r = stream:ReadFloat();
+
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, p, r, -1);
 end
 
 KBEngineLua.Client_onUpdateData_y = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local y = stream:ReadByte();
-	
+
+	local y = stream:ReadFloat();
+
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, -1);
 end
 
 KBEngineLua.Client_onUpdateData_p = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local p = stream:ReadByte();
-	
+
+	local p = stream:ReadFloat();
+
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, p, KBEngineLua.KBE_FLT_MAX, -1);
 end
 
 KBEngineLua.Client_onUpdateData_r = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local r = stream:ReadByte();
-	
+
+	local r = stream:ReadFloat();
+
 	KBEngineLua._updateVolatileData(eid, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, r, -1);
 end
 
 KBEngineLua.Client_onUpdateData_xz = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
-	
-	-- KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 1);
+
+	local x = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, KBEngineLua.KBE_FLT_MAX, z, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 1);
 end
 
 KBEngineLua.Client_onUpdateData_xz_ypr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
 
-	local y = stream:ReadByte();
-	local p = stream:ReadByte();
-	local r = stream:ReadByte();
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, y, p, r, 1);
+	local x = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local y = stream:ReadFloat();
+	local p = stream:ReadFloat();
+	local r = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, KBEngineLua.KBE_FLT_MAX, z, y, p, r, 1);
 end
 
 KBEngineLua.Client_onUpdateData_xz_yp = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
 
-	local y = stream:ReadByte();
-	local p = stream:ReadByte();
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, y, p, KBEngineLua.KBE_FLT_MAX, 1);
+	local x = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local y = stream:ReadFloat();
+	local p = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, KBEngineLua.KBE_FLT_MAX, z, y, p, KBEngineLua.KBE_FLT_MAX, 1);
 end
 
 KBEngineLua.Client_onUpdateData_xz_yr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
 
-	local y = stream:ReadByte();
-	local r = stream:ReadByte();
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, y, KBEngineLua.KBE_FLT_MAX, r, 1);
+	local x = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local y = stream:ReadFloat();
+	local r = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, KBEngineLua.KBE_FLT_MAX, z, y, KBEngineLua.KBE_FLT_MAX, r, 1);
 end
 
 KBEngineLua.Client_onUpdateData_xz_pr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
 
-	local p = stream:ReadByte();
-	local r = stream:ReadByte();
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, KBEngineLua.KBE_FLT_MAX, p, r, 1);
+	local x = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local p = stream:ReadFloat();
+	local r = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, KBEngineLua.KBE_FLT_MAX, z, KBEngineLua.KBE_FLT_MAX, p, r, 1);
 end
 
 KBEngineLua.Client_onUpdateData_xz_y = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
 
-	local y = stream:ReadByte();
-	
-	-- KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 1);
+	local x = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local y = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, KBEngineLua.KBE_FLT_MAX, z, y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 1);
 end
 
 KBEngineLua.Client_onUpdateData_xz_p = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
 
-	local p = stream:ReadByte();
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, KBEngineLua.KBE_FLT_MAX, p, KBEngineLua.KBE_FLT_MAX, 1);
+	local x = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local p = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, KBEngineLua.KBE_FLT_MAX, z, KBEngineLua.KBE_FLT_MAX, p, KBEngineLua.KBE_FLT_MAX, 1);
 end
 
 KBEngineLua.Client_onUpdateData_xz_r = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
 
-	local r = stream:ReadByte();
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, KBEngineLua.KBE_FLT_MAX, xz.y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, r, 1);
+	local x = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local r = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, KBEngineLua.KBE_FLT_MAX, z, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, r, 1);
 end
 
 KBEngineLua.Client_onUpdateData_xyz = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
-	local y = this.readPackY(stream);
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 0);
+
+	local x = stream:ReadFloat();
+	local y = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, y, z, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 0);
 end
 
 KBEngineLua.Client_onUpdateData_xyz_ypr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
-	local y = this.readPackY(stream);
-	
-	local yaw = stream:ReadByte();
-	local p = stream:ReadByte();
-	local r = stream:ReadByte();
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, yaw, p, r, 0);
+
+	local x = stream:ReadFloat();
+	local y = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local yaw = stream:ReadFloat();
+	local p = stream:ReadFloat();
+	local r = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, y, z, yaw, p, r, 0);
 end
 
 KBEngineLua.Client_onUpdateData_xyz_yp = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
-	local y = this.readPackY(stream);
-	
-	local yaw = stream:ReadByte();
-	local p = stream:ReadByte();
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, yaw, p, KBEngineLua.KBE_FLT_MAX, 0);
+
+	local x = stream:ReadFloat();
+	local y = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local yaw = stream:ReadFloat();
+	local p = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, y, z, yaw, p, KBEngineLua.KBE_FLT_MAX, 0);
 end
 
 KBEngineLua.Client_onUpdateData_xyz_yr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
-	local y = this.readPackY(stream);
-	
-	local yaw = stream:ReadByte();
-	local r = stream:ReadByte();
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, yaw, KBEngineLua.KBE_FLT_MAX, r, 0);
+
+	local x = stream:ReadFloat();
+	local y = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local yaw = stream:ReadFloat();
+	local r = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, y, z, yaw, KBEngineLua.KBE_FLT_MAX, r, 0);
 end
 
 KBEngineLua.Client_onUpdateData_xyz_pr = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
-	local y = this.readPackY(stream);
-	
-	local p = stream:ReadByte();
-	local r = stream:ReadByte();
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, KBEngineLua.KBE_FLT_MAX, p, r, 0);
+
+	local x = stream:ReadFloat();
+	local y = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local p = stream:ReadFloat();
+	local r = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, y, z, KBEngineLua.KBE_FLT_MAX, p, r, 0);
 end
 
 KBEngineLua.Client_onUpdateData_xyz_y = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
-	local y = this.readPackY(stream);
-	
-	local yaw = stream:ReadByte();
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, yaw, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 0);
+
+	local x = stream:ReadFloat();
+	local y = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local yaw = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, y, z, yaw, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, 0);
 end
 
 KBEngineLua.Client_onUpdateData_xyz_p = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
-	local y = this.readPackY(stream);
-	
-	local p = stream:ReadByte();
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, KBEngineLua.KBE_FLT_MAX, p, KBEngineLua.KBE_FLT_MAX, 0);
+
+	local x = stream:ReadFloat();
+	local y = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local p = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, y, z, KBEngineLua.KBE_FLT_MAX, p, KBEngineLua.KBE_FLT_MAX, 0);
 end
 
 KBEngineLua.Client_onUpdateData_xyz_r = function(stream)
 
 	local eid = KBEngineLua.getAoiEntityIDFromStream(stream);
-	
-	local xz = this.readPackXZ(stream);
-	local y = this.readPackY(stream);
-	
-	local r = stream:ReadByte();
-	
-	KBEngineLua._updateVolatileData(eid, xz.x, y, xz.y, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, r, 0);
+
+	local x = stream:ReadFloat();
+	local y = stream:ReadFloat();
+	local z = stream:ReadFloat();
+
+	local r = stream:ReadFloat();
+
+	KBEngineLua._updateVolatileData(eid, x, y, z, KBEngineLua.KBE_FLT_MAX, KBEngineLua.KBE_FLT_MAX, r, 0);
 end
 
 KBEngineLua._updateVolatileData = function(entityID, x, y, z, yaw, pitch, roll, isOnGround)
@@ -1792,9 +1796,7 @@ KBEngineLua.Client_onLoginSuccessfully = function(stream)
 	
 	logInfo("KBEngine::Client_onLoginSuccessfully: accountName(" .. accountName .. "), addr(" .. 
 			this.baseappIP .. ":" .. this.baseappPort .. "), datas(" .. string.len(this._serverdatas) .. ")!");
-	
-	-- lj test
-	this.baseappIP = "192.168.8.123";
+
 	this.currstate = "loginbaseapp";
 	this.login_baseapp(true);
 end
@@ -1912,7 +1914,6 @@ end
 ----设置新密码，通过baseapp， 必须玩家登录在线操作所以是baseapp。
 
 KBEngineLua.newPassword = function(old_password, new_password)
-	print ("lj new", old_password, new_password, this.entity_id);
 	local bundle = KBEngineLua.Bundle:New();
 	bundle:newMessage(KBEngineLua.messages["Baseapp_reqAccountNewPassword"]);
 	bundle:writeInt32(this.entity_id);
@@ -2067,9 +2068,8 @@ KBEngineLua.sendTick = function()
 	local span = os.clock() - this._lastTickTime; 
 	
 	-- 更新玩家的位置与朝向到服务端
-	-- lj test
-	-- this.updatePlayerToServer();
-	
+	this.updatePlayerToServer();
+
 	if(span > 15) then
 		span = this._lastTickCBTime - this._lastTickTime;
 

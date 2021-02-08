@@ -1,5 +1,6 @@
 require "scripts/libs/Base"
 require "scripts/network/Dbg"
+require "scripts/app"
 
 local CTRL_FORWARD = 1;
 local CTRL_BACK = 2;
@@ -168,6 +169,13 @@ function Vehicle:FixedUpdate(timeStep)
 			raycastVehicle:SetBrake(i, 0.0);
 		end
     end
+
+	if ((newSteering ~= 0.0) or (accelerator ~= 0.0)) then
+		local entity = app.libnetwork.player();
+		if (entity and (entity.position ~= node.position)) then
+			entity.position = node.position;
+		end
+	end
 end
 
 function Vehicle:PostUpdate(timeStep)
