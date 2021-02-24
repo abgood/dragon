@@ -9,7 +9,7 @@ function Start()
 
 	app.init();
 
-	SampleInitMouseMode(MM_FREE);
+	SampleInitMouseMode(MM_RELATIVE)
 	
 	SubscribeToEvents();
 

@@ -20,7 +20,7 @@ end
 ---------------------------------------------------------------------------------
 function KBEngineLua.Bundle:newMessage(mt)
 	self:fini(false);
-	
+
 	self.msgtype = mt;
 	self.numMessage = self.numMessage + 1;
 
@@ -50,7 +50,7 @@ function KBEngineLua.Bundle:fini(issend)
 		table.insert(self.streamList, self.stream);
 		self.stream = VectorBuffer();
 	end
-	
+
 	if issend then
 		self.numMessage = 0;
 		self.msgtype = nil;
@@ -59,11 +59,11 @@ end
 
 function KBEngineLua.Bundle:send()
 	local networkInterface = KBEngineLua._networkInterface;
-	
+
 	logDbg("KBEngineLua network data send [C2S], msgid: " .. self.msgtype.id .. ", name: " .. self.msgtype.name .. ", length: " .. self.messageLength);
 
 	self:fini(true);
-	
+
 	if(networkInterface.serverConnection:IsConnected()) then
 		local datas = VectorBuffer();
 
@@ -77,7 +77,7 @@ function KBEngineLua.Bundle:send()
 	else
 		logInfo("Bundle::send: networkInterface invalid!");  
 	end
-	
+
 	self.streamList = {};
 	self.stream:Clear();
 end
@@ -96,7 +96,7 @@ function KBEngineLua.Bundle:writeInt16(v)
 	self:checkStream(2);
 	self.stream:WriteShort(v);
 end
-	
+
 function KBEngineLua.Bundle:writeInt32(v)
 	self:checkStream(4);
 	self.stream:WriteInt(v);
@@ -116,7 +116,7 @@ function KBEngineLua.Bundle:writeUint16(v)
 	self:checkStream(2);
 	self.stream:WriteUShort(v);
 end
-	
+
 function KBEngineLua.Bundle:writeUint32(v)
 	self:checkStream(4);
 	self.stream:WriteUInt(v);

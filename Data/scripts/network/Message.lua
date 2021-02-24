@@ -29,20 +29,20 @@ function KBEngineLua.Message:New( id, name, length, argstype, argtypes, handler 
     return me;
 end
 
-	
+
 function KBEngineLua.Message:createFromStream(msgstream)
 	if #self.args <= 0 then
 		return msgstream;
 	end
-	
+
 	local result = {};
 	for i = 1, #self.args, 1 do
 		table.insert( result, self.args[i]:createFromStream(msgstream) );
 	end
-	
+
 	return result;
 end
-	
+
 function KBEngineLua.Message:handleMessage(msgstream)
 	logDbg("KBEngine.Message::handleMessage: id: " .. self.id .. ", name: " .. self.name .. ", msglen: " .. self.msglen .. ", argsType: " .. self.argsType .. ", args: " .. #self.args);
 
@@ -96,7 +96,7 @@ function KBEngineLua.Message.bindFixedMessage()
 	KBEngineLua.messages["Client_onImportClientMessages"] = KBEngineLua.Message:New(518, "Client_onImportClientMessages", -1, -1, {}, 
 		KBEngineLua["Client_onImportClientMessages"]);
 	KBEngineLua.clientMessages[KBEngineLua.messages["Client_onImportClientMessages"].id] = KBEngineLua.messages["Client_onImportClientMessages"];
-	
+
 end
 
 

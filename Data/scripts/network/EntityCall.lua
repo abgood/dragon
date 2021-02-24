@@ -28,7 +28,7 @@ function KBEngineLua.EntityCall:newCall()
 	if(self.bundle == nil) then
 		self.bundle = KBEngineLua.Bundle:New();
 	end
-	
+
 	if(self.type == 0) then
 		self.bundle:newMessage(KBEngineLua.messages["Baseapp_onRemoteCallCellMethodFromClient"]);
 	else
@@ -36,7 +36,7 @@ function KBEngineLua.EntityCall:newCall()
 	end
 
 	self.bundle:writeInt32(self.id);
-	
+
 	return self.bundle;
 end
 
@@ -45,9 +45,9 @@ function KBEngineLua.EntityCall:sendCall(inbundle)
 	if(inbundle == nil) then
 		inbundle = self.bundle;
 	end
-	
+
 	inbundle:send();
-	
+
 	if(inbundle == self.bundle) then
 		self.bundle = nil;
 	end

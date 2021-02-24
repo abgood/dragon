@@ -139,7 +139,7 @@ KBEngineLua.int82angle = function(angle, half)
 	if(half == true) then
 		halfv = 254;
 	end
-	
+
 	halfv = angle * (Mathf.PI / halfv);
 	return halfv;
 end
@@ -169,8 +169,8 @@ function HandleConnectionStatus(eventType, eventData)
 end
 
 function HandleNetworkMessage(eventType, eventData)
-    local msg = eventData["Data"]:GetBuffer()
-    local msgid = msg:ReadUShort();
+	local msg = eventData["Data"]:GetBuffer()
+	local msgid = msg:ReadUShort();
 
 	if this.networkDataLength <= 0 then
 		msglen = msg:ReadUShort();
@@ -229,7 +229,7 @@ end
 
 KBEngineLua.serverErr = function(id)
 	local e = this.serverErrs[id];
-	
+
 	if (e == nil) then
 		return "";
 	end
@@ -256,7 +256,7 @@ end
 KBEngineLua.importMessagesFromMemoryStream = function(loginapp_clientMessages, baseapp_clientMessages,  entitydefMessages, serverErrorsDescr)
 
 	this.resetMessages();
-	
+
 	this.loadingLocalMessages_ = true;
 	local stream = KBEngine.MemoryStream.New();
 	stream:append(loginapp_clientMessages, 0, loginapp_clientMessages.Length);
@@ -272,7 +272,7 @@ KBEngineLua.importMessagesFromMemoryStream = function(loginapp_clientMessages, b
 	stream = KBEngine.MemoryStream.New();
 	stream:append(serverErrorsDescr, 0, serverErrorsDescr.Length);
 	this.onImportServerErrorsDescr(stream);
-		
+
 	stream = KBEngine.MemoryStream.New();
 	stream:append(entitydefMessages, 0, entitydefMessages.Length);
 	this.onImportClientEntityDef(stream);
@@ -291,13 +291,13 @@ end
 KBEngineLua.createDataTypeFromStreams = function(stream, canprint)
 	local aliassize = stream:ReadUShort();
 	logInfo("KBEngineApp::createDataTypeFromStreams: importAlias(size=" .. aliassize .. ")!");
-	
+
 	while(aliassize > 0)
     do  
 		aliassize = aliassize -1;
 		KBEngineLua.createDataTypeFromStream(stream, canprint);
 	end
-	
+
 	for k, datatype in pairs(KBEngineLua.datatypes) do
 		if(KBEngineLua.datatypes[k] ~= nil) then
 			KBEngineLua.datatypes[k]:bind();
@@ -308,26 +308,26 @@ KBEngineLua.createDataTypeFromStream = function(stream, canprint)
 	local utype = stream:ReadUShort();
 	local name = stream:ReadString();
 	local valname = stream:ReadString();
-	
+
 	-- 有一些匿名类型，我们需要提供一个唯一名称放到datatypes中
 	-- 如：
 	-- <onRemoveAvatar>
 	-- 	<Arg>	ARRAY <of> INT8 </of>		</Arg>
 	-- </onRemoveAvatar>				
-	
+
 	if(string.len(valname) == 0) then
 		valname = "nil_" .. utype;
 	end
-		
+
 	if(canprint) then
 		logDbg("KBEngineApp::Client_onImportClientEntityDef: importAlias(" .. name .. ":" .. valname .. ", utype:" .. utype .. ")!");
 	end
-	
+
 	if(name == "FIXED_DICT") then
 		local datatype = KBEngineLua.DATATYPE_FIXED_DICT:New();
 		local keysize = stream:ReadUByte();
 		datatype.implementedBy = stream:ReadString();
-			
+
 		while(keysize > 0)
         do
 			keysize = keysize -1;
@@ -336,7 +336,7 @@ KBEngineLua.createDataTypeFromStream = function(stream, canprint)
 			table.insert(datatype.dictKeys, keyname);
 			datatype.dicttype[keyname] = keyutype;
 		end
-		
+
 		KBEngineLua.datatypes[valname] = datatype;
 	elseif(name == "ARRAY") then
 		local uitemtype = stream:ReadUShort();
@@ -348,7 +348,7 @@ KBEngineLua.createDataTypeFromStream = function(stream, canprint)
 	end
 
 	KBEngineLua.datatypes[utype] = KBEngineLua.datatypes[valname];
-	
+
 	-- 将用户自定义的类型补充到映射表中
 	KBEngineLua.datatype2id[valname] = utype;
 end
@@ -371,10 +371,10 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 		local methodsize = stream:ReadUShort();
 		local base_methodsize = stream:ReadUShort();
 		local cell_methodsize = stream:ReadUShort();
-		
+
 		logDbg("KBEngineApp::Client_onImportClientEntityDef: import(" .. scriptmodule_name .. "), propertys(" .. propertysize .. "), " ..
 				"clientMethods(" .. methodsize .. "), baseMethods(" .. base_methodsize .. "), cellMethods(" .. cell_methodsize .. ")~");
-		
+
 		KBEngineLua.moduledefs[scriptmodule_name] = {};
 		local currModuleDefs = KBEngineLua.moduledefs[scriptmodule_name];
 		currModuleDefs["name"] = scriptmodule_name;
@@ -383,18 +383,18 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 		currModuleDefs["base_methods"] = {};
 		currModuleDefs["cell_methods"] = {};
 		KBEngineLua.moduledefs[scriptUtype] = currModuleDefs;
-		
+
 		local self_propertys = currModuleDefs["propertys"];
 		local self_methods = currModuleDefs["methods"];
 		local self_base_methods = currModuleDefs["base_methods"];
 		local self_cell_methods= currModuleDefs["cell_methods"];
-		
+
 		local Class = KBEngineLua[scriptmodule_name];
 
 		while(propertysize > 0)
 		do
 			propertysize = propertysize - 1;
-			
+
 			local properUtype = stream:ReadUShort();
 			local properFlags = stream:ReadUInt();
 			local aliasID = stream:ReadShort();
@@ -405,10 +405,10 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 			if(Class ~= nil) then
 				setmethod = Class["set_" .. name];
 			end
-			
+
 			local savedata = {properUtype, aliasID, name, defaultValStr, utype, setmethod, properFlags};
 			self_propertys[name] = savedata;
-			
+
 			if(aliasID >= 0) then
 				self_propertys[aliasID] = savedata;
 				currModuleDefs["usePropertyDescrAlias"] = true;
@@ -416,28 +416,28 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 				self_propertys[properUtype] = savedata;
 				currModuleDefs["usePropertyDescrAlias"] = false;
 			end
-			
+
 			logDbg("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), property(" .. name .. "/" .. properUtype .. ").");
 		end
 		while(methodsize > 0)
 		do
 			methodsize = methodsize - 1;
-			
+
 			local methodUtype = stream:ReadUShort();
 			local aliasID = stream:ReadShort();
 			local name = stream:ReadString();
 			local argssize = stream:ReadUByte();
 			local args = {};
-			
+
 			while(argssize > 0)
 			do
 				argssize = argssize - 1;
 				table.insert(args,KBEngineLua.datatypes[stream:ReadUShort()]);
 			end
-			
+
 			local savedata = {methodUtype, aliasID, name, args};
 			self_methods[name] = savedata;
-			
+
 			if(aliasID >= 0) then
 				self_methods[aliasID] = savedata;
 				currModuleDefs["useMethodDescrAlias"] = true;
@@ -445,55 +445,55 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 				self_methods[methodUtype] = savedata;
 				currModuleDefs["useMethodDescrAlias"] = false;
 			end
-			
+
 			logDbg("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), method(" .. name .. ").");
 		end
 
 		while(base_methodsize > 0)
 		do
 			base_methodsize = base_methodsize - 1;
-			
+
 			local methodUtype = stream:ReadUShort();
 			local aliasID = stream:ReadShort();
 			local name = stream:ReadString();
 			local argssize = stream:ReadUByte();
 			local args = {};
-			
+
 			while(argssize > 0)
             do
 				argssize = argssize - 1;
 				table.insert(args,KBEngineLua.datatypes[stream:ReadUShort()]);
 			end
-			
+
 			self_base_methods[name] = {methodUtype, aliasID, name, args};
 			logDbg("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), base_method(" .. name .. ").");
 		end
-		
+
 		while(cell_methodsize > 0)
 		do
 			cell_methodsize = cell_methodsize - 1;
-			
+
 			local methodUtype = stream:ReadUShort();
 			local aliasID = stream:ReadShort();
 			local name = stream:ReadString();
 			local argssize = stream:ReadUByte();
 			local args = {};
-			
+
 			while(argssize > 0)
 			do
 				argssize = argssize -1;
 				table.insert(args,KBEngineLua.datatypes[stream:ReadUShort()]);
 			end
-			
+
 			self_cell_methods[name] = {methodUtype, aliasID, name, args};
 			logDbg("KBEngineApp::Client_onImportClientEntityDef: add(" .. scriptmodule_name .. "), cell_method(" .. name .. ").");
 		end
-		
+
 		defmethod = KBEngineLua[scriptmodule_name];
 		if defmethod == nil then
 			logDbg("KBEngineApp::Client_onImportClientEntityDef: module(" .. scriptmodule_name .. ") not found~");
 		end
-		
+
 		for k, value in pairs(currModuleDefs.propertys) do
 			local infos = value;
 			local properUtype = infos[1];
@@ -513,7 +513,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 			local aliasID = infos[2];
 			local name = infos[3];
 			local args = infos[4];
-			
+
 			if(defmethod ~= nil and defmethod[name] == nil) then
 				logInfo(scriptmodule_name .. ":: method(" .. name .. ") no implement~");
 			end
@@ -524,7 +524,7 @@ end
 
 KBEngineLua.Client_onImportClientMessages = function( stream )
 	this.onImportClientMessages (stream);
-	
+
 	if(this._persistentInfos ~= nil) then
 		this._persistentInfos:onImportClientMessages(this.currserver, stream);
 	end
@@ -532,13 +532,13 @@ end
 
 KBEngineLua.onImportClientMessages = function( stream )
 	local msgcount = stream:ReadUShort();
-	
+
 	logInfo("KBEngineApp::onImportClientMessages: start(" .. msgcount .. ") ...!");
-	
+
 	while(msgcount > 0)
 	do
 		msgcount = msgcount - 1;
-		
+
 		local msgid = stream:ReadUShort();
 		local msglen = stream:ReadShort();
 
@@ -546,11 +546,11 @@ KBEngineLua.onImportClientMessages = function( stream )
 		local argtype = stream:ReadByte();
 		local argsize = stream:ReadUByte();
 		local argstypes = {};
-		
+
 		for i = 1, argsize, 1 do
 			table.insert(argstypes, stream:ReadUByte());
 		end
-		
+
 		local handler = nil;
 		local isClientMethod = string.find(msgname, "Client_") ~= nil;
 		if isClientMethod then
@@ -561,10 +561,10 @@ KBEngineLua.onImportClientMessages = function( stream )
 				logDbg("KBEngineApp::onImportClientMessages: import(" .. msgname .. "/" .. msgid .. ") successfully!");
 			end
 		end
-	
+
 		if string.len(msgname) > 0 then
 			KBEngineLua.messages[msgname] = KBEngineLua.Message:New(msgid, msgname, msglen, argtype, argstypes, handler);
-			
+
 			if isClientMethod then
 				KBEngineLua.clientMessages[msgid] = KBEngineLua.messages[msgname];
 			else
@@ -580,7 +580,7 @@ end
 
 KBEngineLua.Client_onImportServerErrorsDescr = function(stream)
 	this.onImportServerErrorsDescr(stream);
-	
+
 	if(this._persistentInfos ~= nil) then
 		this._persistentInfos:onImportServerErrorsDescr(stream);
 	end
@@ -600,13 +600,13 @@ KBEngineLua.onImportServerErrorsDescr = function(stream)
 	while size > 0
 	do
 		size = size - 1;
-		
+
 		local e = {};
 		e.id = stream:ReadUShort();
 
 		e.name = this.readBlob(stream);
 		e.descr = this.readBlob(stream);
-		
+
 		this.serverErrs[e.id] = e;
 		-- logInfo("Client_onImportServerErrorsDescr: id = " .. e.id .. ", name = " .. e.name .. ", descr = " .. e.descr);
 	end
@@ -625,7 +625,7 @@ KBEngineLua.onImportClientMessagesCompleted = function()
 			bundle:newMessage(KBEngineLua.messages["Loginapp_importServerErrorsDescr"]);
 			bundle:send();
 		end
-		
+
 		if(this.currstate == "login") then
 			this.login_loginapp(false);
 		elseif(this.currstate == "autoimport") then
@@ -638,7 +638,7 @@ KBEngineLua.onImportClientMessagesCompleted = function()
 		this.loginappMessageImported_ = true;
 	else
 		this.baseappMessageImported_ = true;
-		
+
 		if(not this.entitydefImported_ and not this.loadingLocalMessages_) then
 			logInfo("KBEngine::onImportClientMessagesCompleted: send importEntityDef(" .. (this.entitydefImported_ and "true" or "false")  .. ") ...");
 			local bundle = KBEngineLua.Bundle:New();
@@ -653,7 +653,7 @@ end
 KBEngineLua.onImportEntityDefCompleted = function()
 	logInfo("KBEngine::onImportEntityDefCompleted: successfully!");
 	this.entitydefImported_ = true;
-	
+
 	if(not this.loadingLocalMessages_) then
 		this.login_baseapp(false);
 	end
@@ -661,40 +661,40 @@ end
 KBEngineLua.Client_onCreatedProxies = function(rndUUID, eid, entityType)
 
 	logInfo("KBEngineApp::Client_onCreatedProxies: eid(" .. eid .. "), entityType(" .. entityType .. ")!");
-	
+
 	this.entity_uuid = rndUUID;
 	this.entity_id = eid;
 	this.entity_type = entityType;
 
 	local entity = KBEngineLua.entities[eid];
-	
+
 	if(entity == nil) then		
 		local runclass = KBEngineLua[entityType];
 		if(runclass == nil) then
 			logInfo("KBEngine::Client_onCreatedProxies: not found module(" .. entityType .. ")!");
 			return;
 		end
-		
+
 		local entity = runclass:New();
 		entity.id = eid;
 		entity.className = entityType;
-		
+
 		entity.base = KBEngineLua.EntityCall:New();
 		entity.base.id = eid;
 		entity.base.className = entityType;
 		entity.base.type = KBEngineLua.ENTITYCALL_TYPE_BASE;
-		
+
 		KBEngineLua.entities[eid] = entity;
-		
+
 		local entityMessage = KBEngineLua.bufferedCreateEntityMessage[eid];
 		if(entityMessage ~= nil) then
 			KBEngineLua.Client_onUpdatePropertys(entityMessage);
 			KBEngineLua.bufferedCreateEntityMessage[eid] = nil;
 		end
-			
+
 		entity:__init__();
 		entity.inited = true;
-		
+
 		if(KBEngineLua.isOnInitCallPropertysSetMethods) then
 			entity:callPropertysSetMethods();
 		end
@@ -730,17 +730,17 @@ KBEngineLua.getAoiEntityIDFromStream = function(stream)
 
 	return id;
 end
-	
+
 KBEngineLua.onUpdatePropertys_ = function(eid, stream)
 	local entity = KBEngineLua.entities[eid];
-	
+
 	if(entity == nil) then
 		local entityMessage = KBEngineLua.bufferedCreateEntityMessage[eid];
 		if(entityMessage ~= nil) then
 			logError("KBEngineApp::Client_onUpdatePropertys: entity(" .. eid .. ") not found!");
 			return;
 		end
-		
+
 		datas = VectorBuffer();
 		size = stream:ReadUInt();
 		datas:SetData(stream, stream.size - 4);
@@ -748,7 +748,7 @@ KBEngineLua.onUpdatePropertys_ = function(eid, stream)
 		KBEngineLua.bufferedCreateEntityMessage[eid] = datas;
 		return;
 	end
-	
+
 	local currModule = KBEngineLua.moduledefs[entity.className];
 	local pdatas = currModule.propertys;
 	while(not stream:IsEof())
@@ -765,9 +765,9 @@ KBEngineLua.onUpdatePropertys_ = function(eid, stream)
 		local flags = propertydata[7];
 		local val = propertydata[5]:createFromStream(stream);
 		local oldval = entity[propertydata[3]];
-		
+
 		logDbg("KBEngineApp::Client_onUpdatePropertys: " .. entity.className .. "(id=" .. eid  .. ", " .. propertydata[3] .. ")!");
-		
+
 		entity[propertydata[3]] = val;
 		if(setmethod ~= nil) then
 
@@ -797,26 +797,26 @@ end
 
 KBEngineLua.onRemoteMethodCall_ = function(eid, stream)
 	local entity = KBEngineLua.entities[eid];
-	
+
 	if(entity == nil) then
 		logInfo("KBEngineApp::Client_onRemoteMethodCall: entity(" .. eid .. ") not found!");
 		return;
 	end
-	
+
 	local methodUtype = 0;
 	if(KBEngineLua.moduledefs[entity.className].useMethodDescrAlias) then
 		methodUtype = stream:ReadUByte();
 	else
 		methodUtype = stream:ReadUShort();
 	end
-	
+
 	local methoddata = KBEngineLua.moduledefs[entity.className].methods[methodUtype];
 	local args = {};
 	local argsdata = methoddata[4];
 	for i=1, #argsdata do
 		table.insert(args, argsdata[i]:createFromStream(stream));
 	end
-	
+
 	if(entity[methoddata[3]] ~= nil) then
 		entity[methoddata[3]](entity, unpack(args));
 	else
@@ -839,37 +839,37 @@ KBEngineLua.Client_onEntityEnterWorld = function(stream)
 	if(KBEngineLua.entity_id > 0 and eid ~= KBEngineLua.entity_id) then
 		table.insert(KBEngineLua.entityIDAliasIDList, eid);
 	end
-	
+
 	local entityType;
 	if(#KBEngineLua.moduledefs > 255) then
 		entityType = stream:ReadUShort();
 	else
 		entityType = stream:ReadUByte();
 	end
-	
+
 	local isOnGround = 1;
-	
+
 	if(stream.size > 0) then
 		isOnGround = stream:ReadByte();
 	end
-	
+
 	entityType = KBEngineLua.moduledefs[entityType].name;
 	logInfo("KBEngineApp::Client_onEntityEnterWorld: " .. entityType .. "(" .. eid .. "), spaceID(" .. KBEngineLua.spaceID .. "), isOnGround(" .. isOnGround .. ")!");
-	
+
 	local entity = KBEngineLua.entities[eid];
 	if(entity == nil) then
-		
+
 		entityMessage = KBEngineLua.bufferedCreateEntityMessage[eid];
 		if(entityMessage == nil) then
 			logInfo("KBEngineApp::Client_onEntityEnterWorld: entity(" .. eid .. ") not found!");
 			return;
 		end
-		
+
 		local runclass = KBEngineLua[entityType];
 		if(runclass == nil)  then
 			return;
 		end
-		
+
 		local entity = runclass:New();
 		entity.id = eid;
 		entity.className = entityType;
@@ -878,22 +878,22 @@ KBEngineLua.Client_onEntityEnterWorld = function(stream)
 		entity.cell.id = eid;
 		entity.cell.className = entityType;
 		entity.cell.type = KBEngineLua.ENTITYCALL_TYPE_CELL;
-		
+
 		KBEngineLua.entities[eid] = entity;
-		
+
 		KBEngineLua.Client_onUpdatePropertys(entityMessage);
 		KBEngineLua.bufferedCreateEntityMessage[eid] = nil;
-		
+
 		entity.isOnGround = isOnGround > 0;
 		entity:__init__();
 		entity.inited = true;
 		entity.inWorld = true;
 		entity:enterWorld();
-		
+
 		if(KBEngineLua.isOnInitCallPropertysSetMethods) then
 			entity:callPropertysSetMethods();
 		end
-		
+
 		entity:set_direction(entity.direction);
 		entity:set_position(entity.position);
 	else
@@ -916,11 +916,11 @@ KBEngineLua.Client_onEntityEnterWorld = function(stream)
 			KBEngineLua.entityServerPos.x = entity.position.x;
 			KBEngineLua.entityServerPos.y = entity.position.y;
 			KBEngineLua.entityServerPos.z = entity.position.z;
-			
+
 			entity.isOnGround = isOnGround > 0;
 			entity.inWorld = true;
 			entity:enterWorld();
-			
+
 			if(KBEngineLua.isOnInitCallPropertysSetMethods) then
 				entity:callPropertysSetMethods();
 			end
@@ -939,7 +939,7 @@ KBEngineLua.Client_onEntityLeaveWorld = function(eid)
 		logInfo("KBEngineApp::Client_onEntityLeaveWorld: entity(" .. eid .. ") not found!");
 		return;
 	end
-	
+
 	if(entity.inWorld) then
 		entity:leaveWorld();
 	end
@@ -959,7 +959,7 @@ end
 
 KBEngineLua.Client_onEntityDestroyed = function(eid)
 	logInfo("KBEngineApp::Client_onEntityDestroyed: entity(" .. eid .. ")!");
-	
+
 	local entity = KBEngineLua.entities[eid];
 	if(entity == nil) then
 		logInfo("KBEngineApp::Client_onEntityDestroyed: entity(" .. eid .. ") not found!");
@@ -976,7 +976,7 @@ KBEngineLua.Client_onEntityDestroyed = function(eid)
 	table.removeItem(this.controlledEntities, entity, false);
 	--if(_controlledEntities.Remove(entity))
 	--	KBEngineLua.Event.fireOut("onLoseControlledEntity", new object[]{entity});
-		
+
 	KBEngineLua.entities[eid] = nil;
 	entity.onDestroy();
 
@@ -987,17 +987,17 @@ KBEngineLua.Client_onEntityEnterSpace = function(stream)
 	local eid = stream:ReadInt();
 	KBEngineLua.spaceID = stream:ReadUInt();
 	local isOnGround = true;
-	
+
 	if(stream.size > 0) then
 		isOnGround = stream:ReadByte();
 	end
-	
+
 	local entity = KBEngineLua.entities[eid];
 	if(entity == nil) then
 		logInfo("KBEngineApp::Client_onEntityEnterSpace: entity(" .. eid .. ") not found!");
 		return;
 	end
-	
+
 	KBEngineLua.entityServerPos.x = entity.position.x;
 	KBEngineLua.entityServerPos.y = entity.position.y;
 	KBEngineLua.entityServerPos.z = entity.position.z;
@@ -1011,7 +1011,7 @@ KBEngineLua.Client_onEntityLeaveSpace = function(eid)
 		logInfo("KBEngineApp::Client_onEntityLeaveSpace: entity(" .. eid .. ") not found!");
 		return;
 	end
-	
+
 	KBEngineLua.clearSpace(false);
 	entity:leaveSpace();
 end
@@ -1021,7 +1021,7 @@ KBEngineLua.Client_onCreateAccountResult = function(stream)
 
 	local retcode = stream:ReadUShort();
 	local datas = stream:ReadBuffer();
-	
+
 	KBEngineLua.Event.Brocast("onCreateAccountResult", retcode, datas);
 
 	if(retcode ~= 0) then
@@ -1053,9 +1053,9 @@ KBEngineLua.Client_onControlEntity = function(eid, isControlled)
 	else
 		table.removeItem(this.controlledEntities, entity, false);
 	end
-	
+
 	entity.isControlled = isCont;
-	
+
 	entity.onControlled(isCont);
 	--KBEngineLua.Event.fireOut("onControlled", new object[]{entity, isCont});
 end
@@ -1074,7 +1074,7 @@ KBEngineLua.updatePlayerToServer = function()
 	end
 
 	local player = KBEngineLua.player();
-	
+
 	if(player == nil or player.inWorld == false or KBEngineLua.spaceID == 0 or player.isControlled) then
 		return;
     end
@@ -1083,7 +1083,7 @@ KBEngineLua.updatePlayerToServer = function()
 	this._lastUpdateToServerTime = now - (span - 1.0);
 
 	if ((player._entityLastLocalPos - player.position):Length() > 0.01 or (player._entityLastLocalDir - player.direction):Length() > 0.01) then
-	
+
 		-- 记录玩家最后一次上报位置时自身当前的位置
 		player._entityLastLocalPos.x = player.position.x;
 		player._entityLastLocalPos.y = player.position.y;
@@ -1091,7 +1091,7 @@ KBEngineLua.updatePlayerToServer = function()
 		player._entityLastLocalDir.x = player.direction.x;
 		player._entityLastLocalDir.y = player.direction.y;
 		player._entityLastLocalDir.z = player.direction.z;	
-						
+
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Baseapp_onUpdateDataFromClient"]);
 		bundle:writeFloat(player.position.x);
@@ -1128,7 +1128,7 @@ KBEngineLua.updatePlayerToServer = function()
 			--double x = ((double)direction.x / 360 * (System.Math.PI * 2));
 			--double y = ((double)direction.y / 360 * (System.Math.PI * 2));
 			--double z = ((double)direction.z / 360 * (System.Math.PI * 2));
-		
+
 			-- 根据弧度转角度公式会出现负数
 			-- unity会自动转化到0~360度之间，这里需要做一个还原
 			--if(x - System.Math.PI > 0.0)
@@ -1136,10 +1136,10 @@ KBEngineLua.updatePlayerToServer = function()
 
 			--if(y - System.Math.PI > 0.0)
 			--	y -= System.Math.PI * 2;
-			
+
 			--if(z - System.Math.PI > 0.0)
 			--	z -= System.Math.PI * 2;
-			
+
 			bundle:writeFloat(direction.x);
 			bundle:writeFloat(direction.y);
 			bundle:writeFloat(direction.z);
@@ -1153,7 +1153,7 @@ end
 KBEngineLua.addSpaceGeometryMapping = function(spaceID, respath)
 
 	logDbg("KBEngineApp::addSpaceGeometryMapping: spaceID(" .. spaceID .. "), respath(" .. respath .. ")!");
-	
+
 	KBEngineLua.spaceID = spaceID;
 	KBEngineLua.spaceResPath = respath;
 	KBEngineLua.Event.Brocast("addSpaceGeometryMapping", respath);
@@ -1183,7 +1183,7 @@ KBEngineLua.clearEntities = function(isAll)
 				KBEngineLua.entities[eid]:onDestroy();
 			end
 		end  
-			
+
 		KBEngineLua.entities = {}
 		KBEngineLua.entities[entity.id] = entity;
 	else
@@ -1202,7 +1202,7 @@ end
 KBEngineLua.Client_initSpaceData = function(stream)
 
 	KBEngineLua.clearSpace(false);
-	
+
 	KBEngineLua.spaceID = stream:ReadInt();
 	while(not stream:IsEof())
 	do
@@ -1217,9 +1217,9 @@ end
 KBEngineLua.Client_setSpaceData = function(spaceID, key, value)
 
 	logDbg("KBEngineApp::Client_setSpaceData: spaceID(" .. spaceID .. "), key(" .. key .. "), value(" .. value .. ")!");
-	
+
 	KBEngineLua.spacedata[key] = value;
-	
+
 	if(key == "_mapping") then
 		KBEngineLua.addSpaceGeometryMapping(spaceID, value);
     end
@@ -1302,14 +1302,14 @@ KBEngineLua.Client_onSetEntityPosAndDir = function(stream)
 		logInfo("KBEngineApp::Client_onSetEntityPosAndDir: entity(" .. eid .. ") not found!");
 		return;
 	end
-	
+
 	entity.position.x = stream:ReadFloat();
 	entity.position.y = stream:ReadFloat();
 	entity.position.z = stream:ReadFloat();
 	entity.direction.x = stream:ReadFloat();
 	entity.direction.y = stream:ReadFloat();
 	entity.direction.z = stream:ReadFloat();
-	
+
 	-- 记录玩家最后一次上报位置时自身当前的位置
 	entity._entityLastLocalPos.x = entity.position.x;
 	entity._entityLastLocalPos.y = entity.position.y;
@@ -1606,14 +1606,14 @@ KBEngineLua._updateVolatileData = function(entityID, x, y, z, yaw, pitch, roll, 
 		logInfo("KBEngineApp::_updateVolatileData: entity(" .. entityID .. ") not found!");
 		return;
 	end
-	
+
 	-- 小于0不设置
 	if(isOnGround >= 0) then
 		entity.isOnGround = (isOnGround > 0);
 	end
-	
+
 	local changeDirection = false;
-	
+
 	if(roll ~= KBEngineLua.KBE_FLT_MAX) then
 		changeDirection = true;
 		entity.direction.x = KBEngineLua.int82angle(roll, false);
@@ -1623,18 +1623,18 @@ KBEngineLua._updateVolatileData = function(entityID, x, y, z, yaw, pitch, roll, 
 		changeDirection = true;
 		entity.direction.y = KBEngineLua.int82angle(pitch, false);
 	end
-	
+
 	if(yaw ~= KBEngineLua.KBE_FLT_MAX) then
 		changeDirection = true;
 		entity.direction.z = KBEngineLua.int82angle(yaw, false);
 	end
-	
+
 	local done = false;
 	if(changeDirection == true) then
 		KBEngineLua.Event.Brocast("set_direction", entity);		
 		done = true;
 	end
-	
+
 	local positionChanged = x ~= KBEngineLua.KBE_FLT_MAX or y ~= KBEngineLua.KBE_FLT_MAX or z ~= KBEngineLua.KBE_FLT_MAX;
 	if (x == KBEngineLua.KBE_FLT_MAX) then x = 0.0; end
 	if (y == KBEngineLua.KBE_FLT_MAX) then y = 0.0; end
@@ -1644,11 +1644,11 @@ KBEngineLua._updateVolatileData = function(entityID, x, y, z, yaw, pitch, roll, 
 		entity.position.x = x + KBEngineLua.entityServerPos.x;
 		entity.position.y = y + KBEngineLua.entityServerPos.y;
 		entity.position.z = z + KBEngineLua.entityServerPos.z;
-		
+
 		done = true;
 		KBEngineLua.Event.Brocast("updatePosition", entity);
 	end
-	
+
 	if(done) then
 		entity.onUpdateVolatileData();		
     end
@@ -1664,7 +1664,7 @@ KBEngineLua.login = function( username, password, data )
 	KBEngineLua.username = username;
 	KBEngineLua.password = password;
     KBEngineLua._clientdatas = data;
-	
+
 	KBEngineLua.login_loginapp(true);
 end
 
@@ -1761,11 +1761,11 @@ KBEngineLua.Client_onHelloCB = function( stream )
 	this.serverProtocolMD5 = stream:ReadString();
 	this.serverEntitydefMD5 = stream:ReadString();
 	local ctype = stream:ReadInt();
-	
+
 	logInfo("KBEngine::Client_onHelloCB: verInfo(" .. KBEngineLua.serverVersion 
 		.. "), scriptVersion(".. KBEngineLua.serverScriptVersion .. "), srvProtocolMD5(".. KBEngineLua.serverProtocolMD5 
 		.. "), srvEntitydefMD5(".. KBEngineLua.serverEntitydefMD5 .. "), + ctype(" .. ctype .. ")!");
-	
+
 	this.onServerDigest();
 	this._lastTickCBTime = os.clock();
 end
@@ -1793,7 +1793,7 @@ KBEngineLua.Client_onLoginSuccessfully = function(stream)
 	this.baseappPort = stream:ReadUShort();
 
 	this._serverdatas = this.readBlob(stream);
-	
+
 	logInfo("KBEngine::Client_onLoginSuccessfully: accountName(" .. accountName .. "), addr(" .. 
 			this.baseappIP .. ":" .. this.baseappPort .. "), datas(" .. string.len(this._serverdatas) .. ")!");
 
@@ -1815,7 +1815,7 @@ KBEngineLua.reset = function()
 	this._clientdatas = VectorBuffer();
 	this.serverVersion = "";
 	this.serverScriptVersion = "";
-	
+
 	this.entity_uuid = 0;
 	this.entity_id = 0;
 	this.entity_type = "";
@@ -1823,7 +1823,7 @@ KBEngineLua.reset = function()
     this.spaceID = 0;
     this.spaceResPath = "";
     this.isLoadedGeometry = false;
-	
+
 	this.bufferedCreateEntityMessage = {};
 
 	this._networkInterface:Disconnect();
@@ -1834,7 +1834,7 @@ KBEngineLua.reset = function()
 
 	this.spacedata = {};
 	this.entityIDAliasIDList = {};
-	
+
 end
 
 
@@ -1843,7 +1843,7 @@ KBEngineLua.onOpenLoginapp_resetpassword = function()
 	this.currserver = "loginapp";
 	this.currstate = "resetpassword";
 	this._lastTickCBTime = os.clock();
-	
+
 	if(not this.loginappMessageImported_) then
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Loginapp_importClientMessages"]);
@@ -1940,7 +1940,7 @@ KBEngineLua.createAccount = function(username, password, data)
 	this.username = username;
 	this.password = password;
     this._clientdatas = data;
-	
+
 	this.createAccount_loginapp(true);
 end
 
@@ -1965,7 +1965,7 @@ KBEngineLua.onOpenLoginapp_createAccount = function()
 	this.currserver = "loginapp";
 	this.currstate = "createAccount";
 	this._lastTickCBTime = os.clock();
-	
+
 	if( not this.loginappMessageImported_) then
 		local bundle = KBEngineLua.Bundle:New();
 		bundle:newMessage(KBEngineLua.messages["Loginapp_importClientMessages"]);
@@ -1982,10 +1982,10 @@ end
 
 KBEngineLua.Client_onVersionNotMatch = function(stream)
 	this.serverVersion = stream:ReadString();
-	
+
 	logInfo("Client_onVersionNotMatch: verInfo=" .. this.clientVersion .. "(server: " .. this.serverVersion .. ")");
 	--KBEngineLua.Event.fireAll("onVersionNotMatch", new object[]{clientVersion, serverVersion});
-	
+
 	if(this._persistentInfos ~= nil) then
 		this._persistentInfos:onVersionNotMatch(this.clientVersion, this.serverVersion);
 	end
@@ -1995,10 +1995,10 @@ end
 
 KBEngineLua.Client_onScriptVersionNotMatch = function(stream)
 	this.serverScriptVersion = stream:ReadString();
-	
+
 	logInfo("Client_onScriptVersionNotMatch: verInfo=" .. this.clientScriptVersion .. "(server: " .. this.serverScriptVersion .. ")");
 	--KBEngineLua.Event.fireAll("onScriptVersionNotMatch", new object[]{clientScriptVersion, this.serverScriptVersion});
-	
+
 	if(_persistentInfos ~= nil) then
 		_persistentInfos.onScriptVersionNotMatch(this.clientScriptVersion, this.serverScriptVersion);
 	end
@@ -2064,9 +2064,9 @@ KBEngineLua.sendTick = function()
 	if(not this.loginappMessageImported_ and not this.baseappMessageImported_) then
 		return;
 	end
-	
+
 	local span = os.clock() - this._lastTickTime; 
-	
+
 	-- 更新玩家的位置与朝向到服务端
 	this.updatePlayerToServer();
 
@@ -2083,7 +2083,7 @@ KBEngineLua.sendTick = function()
 
 		local Loginapp_onClientActiveTickMsg = KBEngineLua.messages["Loginapp_onClientActiveTick"];
 		local Baseapp_onClientActiveTickMsg = KBEngineLua.messages["Baseapp_onClientActiveTick"];
-		
+
 		if(this.currserver == "loginapp") then
 			if(Loginapp_onClientActiveTickMsg ~= nil) then
 				local bundle = KBEngineLua.Bundle:New();
@@ -2097,7 +2097,7 @@ KBEngineLua.sendTick = function()
 				bundle:send();
 			end
 		end
-		
+
 		this._lastTickTime = os.clock();
 	end
 end

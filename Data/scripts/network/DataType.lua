@@ -4,11 +4,11 @@ KBEngineLua.DATATYPE_UINT8 =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return stream:ReadByte();
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeUint8(v);
 	end,
@@ -16,16 +16,16 @@ KBEngineLua.DATATYPE_UINT8 =
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v);
 	end,
-	
+
 	isSameType = function(self, v)
 		if(type(v) ~= "number") then
 			return false;
         end
-		
+
 		if(v < 0 or v > 0xff) then
 			return false;
 		end
-		
+
 		return true;
 	end
 }
@@ -34,24 +34,24 @@ KBEngineLua.DATATYPE_UINT16 =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return stream:ReadUShort();
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeUint16(v);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v);
 	end,
-	
+
 	isSameType = function(self, v)
 		if(type(v) ~= "number") then
 			return false;
 		end
-		
+
 		if(v < 0 or v > 0xffff) then
 			return false;
 		end
@@ -63,28 +63,28 @@ KBEngineLua.DATATYPE_UINT32 =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return stream:ReadUInt();
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeUint32(v);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v);
 	end,
-	
+
 	isSameType = function(self, v)
 		if(type(v) ~= "number") then
 			return false;
 		end
-		
+
 		if(v < 0 or v > 0xffffffff) then
 			return false;
 		end
-		
+
 		return true;
 	end,
 }
@@ -93,19 +93,19 @@ KBEngineLua.DATATYPE_UINT64 =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return stream:ReadUInt64();
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeUint64(v);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v);
 	end,
-	
+
 	isSameType = function(self, v)
 		return true;
 	end
@@ -115,24 +115,24 @@ KBEngineLua.DATATYPE_INT8 =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return stream:ReadByte();
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeInt8(v);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v);
 	end,
-	
+
 	isSameType = function(self, v)
 		if(type(v) ~= "number")then
 			return false;
 		end
-		
+
 		if(v < -0x80 or v > 0x7f)then
 			return false;
 		end
@@ -144,24 +144,24 @@ KBEngineLua.DATATYPE_INT16 =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return stream:ReadShort();
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeInt16(v);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v);
 	end,
-	
+
 	isSameType = function(self, v)
 		if(type(v) ~= "number")then
 			return false;
 		end
-		
+
 		if(v < -0x8000 or v > 0x7fff)then
 			return false;
 		end
@@ -173,25 +173,25 @@ KBEngineLua.DATATYPE_INT32 =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return stream:ReadInt();
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeInt32(v);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v);
 	end,
-	
+
 	isSameType = function(self, v)
-	
+
 		if(type(v) ~= "number")then
 			return false;
 		end
-		
+
 		if(v < -0x80000000 or v > 0x7fffffff)then
 			return false;
 		end
@@ -203,19 +203,19 @@ KBEngineLua.DATATYPE_INT64 =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return stream:ReadInt64();
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeInt64(v);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v);
 	end,
-	
+
 	isSameType = function(self, v)
 		return true;
 	end
@@ -225,19 +225,19 @@ KBEngineLua.DATATYPE_FLOAT =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return stream:ReadFloat();
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:WriteFloat(v);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v);
 	end,
-	
+
 	isSameType = function(self, v)
 		return type(v) == "number";
 	end
@@ -247,19 +247,19 @@ KBEngineLua.DATATYPE_DOUBLE =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return stream:ReadDouble();
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeDouble(v);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v);
 	end,
-	
+
 	isSameType = function(self, v)
 		return type(v) == "number";
 	end
@@ -269,19 +269,19 @@ KBEngineLua.DATATYPE_STRING =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return stream:ReadString();
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeString(v);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v);
 	end,
-	
+
 	isSameType = function(self, v)
 		return type(v) == "string";
 	end
@@ -291,20 +291,20 @@ KBEngineLua.DATATYPE_VECTOR2 =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return Vector2(stream:ReadFloat(), stream:ReadFloat());
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeFloat(v.x);
 		bundle:writeFloat(v.y);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return Vector2(0,0);
 	end,
-	
+
 	isSameType = function(self, v)		
 		return true;
 	end
@@ -313,21 +313,21 @@ KBEngineLua.DATATYPE_VECTOR3 =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return Vector3(stream:ReadFloat(), stream:ReadFloat(), stream:ReadFloat());
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeFloat(v.x);
 		bundle:writeFloat(v.y);
 		bundle:writeFloat(v.z);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return Vector3(0,0,0);
 	end,
-	
+
 	isSameType = function(self, v)		
 		return true;
 	end
@@ -337,22 +337,22 @@ KBEngineLua.DATATYPE_VECTOR4 =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return Vector4(stream:ReadFloat(), stream:ReadFloat(), stream:ReadFloat(), stream:ReadFloat());
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeFloat(v.x);
 		bundle:writeFloat(v.y);
 		bundle:writeFloat(v.z);
 		bundle:writeFloat(v.w);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return Vector4(0,0,0,0);
 	end,
-	
+
 	isSameType = function(self, v)		
 		return true;
 	end
@@ -363,19 +363,19 @@ KBEngineLua.DATATYPE_PYTHON =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return KBEngineLua.readBlob(stream);
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeBlob(v);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v)
 	end,
-	
+
 	isSameType = function(self, v)
 		return true;
 	end
@@ -389,18 +389,18 @@ KBEngineLua.DATATYPE_UNICODE =
 	createFromStream = function(self, stream)
 		return KBEngineLua.readBlob(stream);
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeBlob(v);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		if(type(v) == "string")then
 			return v;
         end
 		return "";
 	end,
-	
+
 	isSameType = function(self, v)
 		return type(v) == "string";
 	end
@@ -410,17 +410,17 @@ KBEngineLua.DATATYPE_ENTITYCALL =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v);
 	end,
-	
+
 	isSameType = function(self, v)
 		return false;
 	end
@@ -430,19 +430,19 @@ KBEngineLua.DATATYPE_BLOB =
 {
 	bind = function(self)
 	end,
-	
+
 	createFromStream = function(self, stream)
 		return KBEngineLua.readBlob(stream);
 	end,
-	
+
 	addToStream = function(self, bundle, v)
 		bundle:writeBlob(v);
 	end,
-	
+
 	parseDefaultValStr = function(self, v)
 		return loadstring("return "..v);
 	end,
-	
+
 	isSameType = function(self, v)
 		return true;
 	end
@@ -463,7 +463,7 @@ KBEngineLua.DATATYPE_ARRAY.bind = function(self)
 		self._type = KBEngineLua.datatypes[self._type];
 	end
 end
-	
+
 KBEngineLua.DATATYPE_ARRAY.createFromStream = function(self, stream)
 	local size = stream:ReadUInt();
 	local datas = {};
@@ -474,7 +474,7 @@ KBEngineLua.DATATYPE_ARRAY.createFromStream = function(self, stream)
 	end
 	return datas;
 end
-	
+
 KBEngineLua.DATATYPE_ARRAY.addToStream = function(self, bundle, v)
 	stream:writeUint32(#v);
 	for k,va in pairs(v)
@@ -486,7 +486,7 @@ end
 KBEngineLua.DATATYPE_ARRAY.parseDefaultValStr = function(self, v)
 	return loadstring("return "..v);
 end
-	
+
 KBEngineLua.DATATYPE_ARRAY.isSameType = function(self, v)
 	for k,va in pairs(v)
 	do
@@ -523,7 +523,7 @@ KBEngineLua.DATATYPE_FIXED_DICT.createFromStream = function(self, stream)
 	for i, key in ipairs(self.dictKeys) do
 		datas[key] = self.dicttype[key]:createFromStream(stream);
 	end
-	
+
 	return datas;
 end
 

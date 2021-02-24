@@ -14,7 +14,7 @@ function KBEngineLua.PersistentInfos:New( path )
 
     return me;
 end
-	
+
 function KBEngineLua.PersistentInfos:isGood()
 	return self._isGood;
 end
@@ -29,17 +29,17 @@ function KBEngineLua.PersistentInfos:_getSuffix()
 end
 
 function KBEngineLua.PersistentInfos:loadAll()
-	
+
 	local kbengine_digest = KBELuaUtil.loadFile (self._persistentDataPath, "kbengine.digest." .. self:_getSuffixBase(), false);
 	if(kbengine_digest.Length <= 0) then
 		self:clearMessageFiles();
 		return false;
 	end
 
-	
+
 
 	self._digest = KBELuaUtil.bytesToString(kbengine_digest);
-	
+
 	local loginapp_onImportClientMessages = KBELuaUtil.loadFile(self._persistentDataPath, "loginapp_clientMessages." .. self:_getSuffix(), false);
 
 	local baseapp_onImportClientMessages = KBELuaUtil.loadFile(self._persistentDataPath, "baseapp_clientMessages." .. self:_getSuffix(), false);
@@ -55,9 +55,9 @@ function KBEngineLua.PersistentInfos:loadAll()
             self:clearMessageFiles();
             return false;
         end
-		
+
 	end
-	
+
 	return true;
 end
 
@@ -90,7 +90,7 @@ function KBEngineLua.PersistentInfos:onServerDigest(currserver, serverProtocolMD
 	if(currserver == "baseapp") then
 		return;
 	end
-	
+
 	if(self._digest ~= serverProtocolMD5 .. serverEntitydefMD5) then
 		self._digest = serverProtocolMD5 .. serverEntitydefMD5;
 
@@ -98,12 +98,12 @@ function KBEngineLua.PersistentInfos:onServerDigest(currserver, serverProtocolMD
 	else
 		return;
 	end
-	
+
 	if(KBELuaUtil.loadFile(self._persistentDataPath, "kbengine.digest." .. self:_getSuffixBase(), false).Length) then
 		KBELuaUtil.createFile(self._persistentDataPath, "kbengine.digest." .. self:_getSuffixBase(), KBELuaUtil.stringToBytes(serverProtocolMD5 .. serverEntitydefMD5));
 	end
 end
-	
+
 function KBEngineLua.PersistentInfos:clearMessageFiles()
 	KBELuaUtil.deleteFile(self._persistentDataPath, "kbengine.digest." .. self:_getSuffixBase());
 	KBELuaUtil.deleteFile(self._persistentDataPath, "loginapp_clientMessages." .. self:_getSuffix());
