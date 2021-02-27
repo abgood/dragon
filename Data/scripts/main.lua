@@ -9,8 +9,8 @@ function Start()
 
 	app.init();
 
-	SampleInitMouseMode(MM_RELATIVE)
-	
+	SampleInitMouseMode(MM_FREE);
+
 	SubscribeToEvents();
 
 	app.libnetwork.encode();
@@ -24,11 +24,13 @@ function Stop()
 end
 
 function SubscribeToEvents()
-    SubscribeToEvent("Update", "HandleUpdate")
-    SubscribeToEvent("PostUpdate", "HandlePostUpdate")
-
-    SubscribeToEvent("NetworkMessage", "HandleNetworkMessage")
-    SubscribeToEvent("ServerConnected", "HandleConnectionStatus")
+	SubscribeToEvent("Update", "HandleUpdate");
+	SubscribeToEvent("PostUpdate", "HandlePostUpdate");
+	
+	SubscribeToEvent("NetworkMessage", "HandleNetworkMessage");
+	SubscribeToEvent("ServerConnected", "HandleConnectionStatus");
+	SubscribeToEvent("ServerDisconnected", "HandleConnectionServerDisconnected");
+	SubscribeToEvent("ConnectFailed", "HandleConnectionFailed");
 end
 
 function HandleUpdate(eventType, eventData)

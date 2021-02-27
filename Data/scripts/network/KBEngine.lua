@@ -168,6 +168,16 @@ function HandleConnectionStatus(eventType, eventData)
 	end
 end
 
+function HandleConnectionFailed(eventType, eventData)
+	logError("Client: Connection failed!");
+	this.Destroy();
+end
+
+function HandleConnectionServerDisconnected(eventType, eventData)
+	logError("Client: Disconnected from server");
+	this.Destroy();
+end
+
 function HandleNetworkMessage(eventType, eventData)
 	local msg = eventData["Data"]:GetBuffer()
 	local msgid = msg:ReadUShort();
