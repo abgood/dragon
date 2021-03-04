@@ -224,7 +224,7 @@ KBEngineLua.findEntity = function(entityID)
 end
 
 KBEngineLua.resetMessages = function()
-    this.loadingLocalMessages_ = false;
+	this.loadingLocalMessages_ = false;
 	this.loginappMessageImported_ = false;
 	this.baseappMessageImported_ = false;
 	this.entitydefImported_ = false;
@@ -303,7 +303,7 @@ KBEngineLua.createDataTypeFromStreams = function(stream, canprint)
 	logInfo("KBEngineApp::createDataTypeFromStreams: importAlias(size=" .. aliassize .. ")!");
 
 	while(aliassize > 0)
-    do  
+	do
 		aliassize = aliassize -1;
 		KBEngineLua.createDataTypeFromStream(stream, canprint);
 	end
@@ -339,7 +339,7 @@ KBEngineLua.createDataTypeFromStream = function(stream, canprint)
 		datatype.implementedBy = stream:ReadString();
 
 		while(keysize > 0)
-        do
+		do
 			keysize = keysize -1;
 			local keyname = stream:ReadString();
 			local keyutype = stream:ReadUShort();
@@ -470,7 +470,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 			local args = {};
 
 			while(argssize > 0)
-            do
+			do
 				argssize = argssize - 1;
 				table.insert(args,KBEngineLua.datatypes[stream:ReadUShort()]);
 			end
@@ -514,7 +514,7 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 
 			if (defmethod ~= nil) and (utype ~= nil) then
 				defmethod[name] = utype:parseDefaultValStr(defaultValStr);
-            end
+			end
 		end
 
 		for k, value in pairs(currModuleDefs.methods) do
@@ -768,7 +768,7 @@ KBEngineLua.onUpdatePropertys_ = function(eid, stream)
 			utype = stream:ReadUByte();
 		else
 			utype = stream:ReadUShort();
-        end
+		end
 
 		local propertydata = pdatas[utype];
 		local setmethod = propertydata[6];
@@ -1087,7 +1087,7 @@ KBEngineLua.updatePlayerToServer = function()
 
 	if(player == nil or player.inWorld == false or KBEngineLua.spaceID == 0 or player.isControlled) then
 		return;
-    end
+	end
 
 
 	this._lastUpdateToServerTime = now - (span - 1.0);
@@ -1187,7 +1187,7 @@ KBEngineLua.clearEntities = function(isAll)
 		 
 			if(eid ~= entity.id) then
 				if(KBEngineLua.entities[eid].inWorld) then
-			    	KBEngineLua.entities[eid]:leaveWorld();
+					KBEngineLua.entities[eid]:leaveWorld();
 				end
 
 				KBEngineLua.entities[eid]:onDestroy();
@@ -1199,7 +1199,7 @@ KBEngineLua.clearEntities = function(isAll)
 	else
 		for eid, e in pairs(KBEngineLua.entities) do
 			if(KBEngineLua.entities[eid].inWorld) then
-		    	KBEngineLua.entities[eid]:leaveWorld();
+				KBEngineLua.entities[eid]:leaveWorld();
 			end
 
 			KBEngineLua.entities[eid]:onDestroy();
@@ -1232,7 +1232,7 @@ KBEngineLua.Client_setSpaceData = function(spaceID, key, value)
 
 	if(key == "_mapping") then
 		KBEngineLua.addSpaceGeometryMapping(spaceID, value);
-    end
+	end
 
 	--KBEngine.Event.fire("onSetSpaceData", spaceID, key, value);
 end
@@ -1328,8 +1328,10 @@ KBEngineLua.Client_onSetEntityPosAndDir = function(stream)
 	entity._entityLastLocalDir.y = entity.direction.y;
 	entity._entityLastLocalDir.z = entity.direction.z;	
 
-	entity:set_direction(entity.direction);
-	entity:set_position(entity.position);
+	if (this.player().id ~= entity.id) then
+		entity:set_direction(entity.direction);
+		entity:set_position(entity.position);
+	end
 end
 
 KBEngineLua.Client_onUpdateData_ypr = function(stream)
@@ -1649,7 +1651,7 @@ KBEngineLua._updateVolatileData = function(entityID, x, y, z, yaw, pitch, roll, 
 	if (x == KBEngineLua.KBE_FLT_MAX) then x = 0.0; end
 	if (y == KBEngineLua.KBE_FLT_MAX) then y = 0.0; end
 	if (z == KBEngineLua.KBE_FLT_MAX) then z = 0.0; end
-            
+
 	if(positionChanged) then
 		entity.position.x = x + KBEngineLua.entityServerPos.x;
 		entity.position.y = y + KBEngineLua.entityServerPos.y;
@@ -1661,7 +1663,7 @@ KBEngineLua._updateVolatileData = function(entityID, x, y, z, yaw, pitch, roll, 
 
 	if(done) then
 		entity.onUpdateVolatileData();		
-    end
+	end
 end
 
 KBEngineLua.login = function( username, password, data )
@@ -1673,7 +1675,7 @@ KBEngineLua.login = function( username, password, data )
 
 	KBEngineLua.username = username;
 	KBEngineLua.password = password;
-    KBEngineLua._clientdatas = data;
+	KBEngineLua._clientdatas = data;
 
 	KBEngineLua.login_loginapp(true);
 end
@@ -1830,9 +1832,9 @@ KBEngineLua.reset = function()
 	this.entity_id = 0;
 	this.entity_type = "";
 
-    this.spaceID = 0;
-    this.spaceResPath = "";
-    this.isLoadedGeometry = false;
+	this.spaceID = 0;
+	this.spaceResPath = "";
+	this.isLoadedGeometry = false;
 
 	this.bufferedCreateEntityMessage = {};
 
@@ -1949,7 +1951,7 @@ KBEngineLua.createAccount = function(username, password, data)
 
 	this.username = username;
 	this.password = password;
-    this._clientdatas = data;
+	this._clientdatas = data;
 
 	this.createAccount_loginapp(true);
 end
@@ -2124,7 +2126,7 @@ end
 
 KBEngineLua.update = function(eventType, eventData)
 	-- 向服务端发送心跳以及同步角色信息到服务端
-    this.sendTick();
+	this.sendTick();
 end
 
 KBEngineLua.random_seed = function()

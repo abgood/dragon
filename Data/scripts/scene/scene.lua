@@ -21,6 +21,9 @@ local CTRL_RIGHT = 8;
 local CTRL_BRAKE = 16;
 
 
+local jillNodes = {};
+
+
 scene.init = function()
 	logInfo("scene init");
 	this.CreateScene()
@@ -69,12 +72,14 @@ scene.addSpaceGeometryMapping = function(resPath)
 	scene_:LoadXML(file);
 	cameraNode = scene_:GetChild("Camera");
 
-    local lightNode = scene_:GetChild("DirectionalLight")
-    lightNode.direction = Vector3(0.3, -0.5, 0.425)
+	local lightNode = scene_:GetChild("DirectionalLight")
+	lightNode.direction = Vector3(0.3, -0.5, 0.425)
 
 	this.SetupViewport();
 
 	this.add_mushrooms();
+
+	this.add_jills();
 
 	this.create_avatar_enter_world();
 end
@@ -100,7 +105,7 @@ scene.update = function(eventType, eventData)
 		return;
 	end
 
-    local vehicle = vehicleNode:GetScriptObject();
+	local vehicle = vehicleNode:GetScriptObject();
 	if (not vehicle) then
 		return;
 	end
@@ -131,7 +136,7 @@ scene.post_update = function(eventType, eventData)
 		return;
 	end
 
-    local vehicle = vehicleNode:GetScriptObject();
+	local vehicle = vehicleNode:GetScriptObject();
 	if (not vehicle) then
 		return;
 	end
@@ -161,8 +166,8 @@ scene.create_avatar_enter_world = function()
 end
 
 scene.SetupViewport = function()
-    local camera = cameraNode:GetComponent("Camera")
-    renderer:SetViewport(0, Viewport:new(scene_, camera))
+	local camera = cameraNode:GetComponent("Camera")
+	renderer:SetViewport(0, Viewport:new(scene_, camera))
 end
 
 scene.add_mushrooms = function()
@@ -171,7 +176,7 @@ scene.add_mushrooms = function()
 
 	local NUM_MUSHROOMS = 1000;
 	for i = 1, NUM_MUSHROOMS do
-		local objectNode = scene_:CreateChild("Mushroom");
+		local objectNode = scene_:CreateChild("Mushroom_" .. i);
 		local position = Vector3(Random(2000.0) - 1000.0, 0.0, Random(2000.0) - 1000.0);
 		position.y = terrain:GetHeight(position) - 0.1;
 		objectNode.position = position;
@@ -188,6 +193,41 @@ scene.add_mushrooms = function()
 		local shape = objectNode:CreateComponent("CollisionShape");
 		shape:SetTriangleMesh(object.model, 0);
 	end
+end
+
+scene.add_jills = function()
+	local terrainNode = scene_:GetChild("Terrain");
+	local terrain = terrainNode:GetComponent("Terrain");
+
+	local NUM_MODELS = 300;
+	local MODEL_MOVE_SPEED = 2.0;
+	local MODEL_ROTATE_SPEED = 100.0;
+	local bounds = BoundingBox(Vector3(-1000.0, 0.0, -1000,0), Vector3(1000.0, 0.0, 1000.0));
+
+	for i = 1, NUM_MODELS do
+		local modelNode = scene_:CreateChild("Jill_" .. i);
+		local position = Vector3(Random(2000.0) - 1000.0, 0.0, Random(2000.0) - 1000.0);
+		position.y = terrain:GetHeight(position);
+		modelNode.position = position;
+		modelNode.rotation = Quaternion(Vector3(0.0, 1.0, 0.0), terrain:GetNormal(position));
+
+		local modelObject = modelNode:CreateComponent("AnimatedModel");
+		modelObject.model = cache:GetResource("Model", "Models/Kachujin/Kachujin.mdl");
+		modelObject.material = cache:GetResource("Material", "Models/Kachujin/Materials/Kachujin.xml");
+		modelObject.castShadows = true;
+
+		local walkAnimation = cache:GetResource("Animation", "Models/Kachujin/Kachujin_Walk.ani");
+		local state = modelObject:AddAnimationState(walkAnimation);
+		state.weight = 1.0;
+		state.looped = true;
+		state.time = Random(walkAnimation.length);
+
+		local object = modelNode:CreateScriptObject("scripts/object/Mover.lua", "Mover");
+		object:SetParameters(MODEL_MOVE_SPEED, MODEL_ROTATE_SPEED, bounds);
+
+		table.insert(jillNodes, modelNode);
+	end
+
 end
 
 
