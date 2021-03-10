@@ -90,6 +90,8 @@ function Vehicle:Init()
 	end
 
 	self:PostInit();
+
+	self:SetName();
 end
 
 function Vehicle:CreateEmitter(place)
@@ -120,6 +122,34 @@ function Vehicle:PostInit()
 	self.hullBody = node:GetComponent("RigidBody");
 	self:CreateEmitters();
 	raycastVehicle:ResetWheels();
+end
+
+function Vehicle:SetName()
+	local node = self.node;
+	local id = app.scene.player.id;
+	local name = app.scene.player.name;
+
+	logDbg("Vehicle:SetName id(" .. id .. "), name(" .. name .. ")");
+
+	local nameNode = node:CreateChild("nameNode");
+	nameNode.position = Vector3(0.0, 1.5, 0.0);
+
+	nameText = nameNode:CreateComponent("Text3D");
+	nameText.text = id .. "_" .. name;
+
+	nameText:SetFont(cache:GetResource("Font", "Fonts/msyh.ttf"), 24);
+
+	if (id % 3 == 1) then
+		nameText.color = Color(1.0, 0.0, 0.0);
+	elseif (id % 3 == 2) then
+		nameText.color = Color(0.0, 1.0, 0.0);
+	else
+		nameText.color = Color(0.0, 0.0, 1.0);
+	end
+
+	nameText.textEffect = TE_SHADOW;
+	nameText.effectColor = Color(0.5, 0.5, 0.5);
+	nameText:SetAlignment(HA_CENTER, VA_CENTER);
 end
 
 function Vehicle:FixedUpdate(timeStep)

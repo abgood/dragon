@@ -102,7 +102,7 @@
 			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
 			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
 			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
-			<attribute name="Text" value="Register" />
+			<attribute name="Text" value="注册" />
 		</element>
 	</element>
 	<element type="Button">
@@ -125,7 +125,7 @@
 			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
 			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
 			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
-			<attribute name="Text" value="return login" />
+			<attribute name="Text" value="返回登录" />
 		</element>
 	</element>
 </element>
