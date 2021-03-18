@@ -67,7 +67,6 @@ KBEngineLua.username = "kbengine";
 KBEngineLua.password = "123456";
 
 -- 网络信息
-KBEngineLua.connect_method = "";
 KBEngineLua.currserver = "";
 KBEngineLua.currstate = "";
 
@@ -98,6 +97,7 @@ KBEngineLua.bufferedCreateEntityMessage = {};
 
 -- 持久化
 KBEngineLua._persistentInfos = nil;
+KBEngineLua._persistentDataPath = fileSystem:GetProgramDir() .. "logs/";
 
 -- 是否正在加载本地消息协议
 KBEngineLua.loadingLocalMessages_ = false;
@@ -146,24 +146,28 @@ end
 
 KBEngineLua.init = function()
 	logInfo("network init");
+
+	this.resetMessages();
+
 	this._networkInterface = network;
+	this._persistentInfos = KBEngineLua.PersistentInfos:New(this._persistentDataPath);
 	this.installEvents()
 end
 
 function HandleConnectionStatus(eventType, eventData)
-	if (this.currserver == "") and (this.currstate == "") then
-		if (this.connect_method == "login") then
-			this.onLogin_loginapp();
-		elseif (this.connect_method == "createAccount") then
+	if (this.currserver == "loginapp") then
+		if (this.currstate == "login") then
+			this.hello();
+		elseif (this.currstate == "createAccount") then
 			this.onOpenLoginapp_createAccount();
-		elseif (this.connect_method == "resetpassword") then
+		elseif (this.currstate == "resetpassword") then
 			this.onOpenLoginapp_resetpassword();
-		elseif (this.connect_method == "reloginbaseapp") then
+		elseif (this.currstate == "reloginbaseapp") then
 			this.relogin_baseapp();
 		end
 
-	elseif (this.currserver == "loginapp") and (this.currstate == "loginbaseapp") then
-		this.onLogin_baseapp();
+	elseif (this.currserver == "baseapp") then
+		this.hello();
 
 	end
 end
@@ -210,6 +214,7 @@ KBEngineLua.Destroy = function()
 	logInfo("KBEngine::destroy()");
 	this.logout_baseapp();
 	this.reset();
+
 	this.resetMessages();
 
 	this.uninstallEvents()
@@ -231,6 +236,7 @@ KBEngineLua.resetMessages = function()
 	this.isImportServerErrorsDescr_ = false;
 	this.serverErrs = {};
 	this.Message.clear();
+	this.reset_login_datatypes();
 	this.moduledefs = {};
 	this.entities = {};
 
@@ -263,29 +269,24 @@ KBEngineLua.uninstallEvents = function()
 	KBEngineLua.Event.RemoveListener("onLoginFailed", this.onLoginFailed);
 end
 
-KBEngineLua.importMessagesFromMemoryStream = function(loginapp_clientMessages, baseapp_clientMessages,  entitydefMessages, serverErrorsDescr)
-
+KBEngineLua.importMessagesFromVectorBuffer = function(loginapp_clientMessages, baseapp_clientMessages,  entitydefMessages, serverErrorsDescr)
 	this.resetMessages();
 
 	this.loadingLocalMessages_ = true;
-	local stream = KBEngine.MemoryStream.New();
-	stream:append(loginapp_clientMessages, 0, loginapp_clientMessages.Length);
+	loginapp_clientMessages:Seek(0);
 	this.currserver = "loginapp";
-	this.onImportClientMessages(stream);
+	this.onImportClientMessages(loginapp_clientMessages);
 
-	stream = KBEngine.MemoryStream.New();
-	stream:append(baseapp_clientMessages, 0, baseapp_clientMessages.Length);
+	baseapp_clientMessages:Seek(0);
 	this.currserver = "baseapp";
-	this.onImportClientMessages(stream);
+	this.onImportClientMessages(baseapp_clientMessages);
 	this.currserver = "loginapp";
 
-	stream = KBEngine.MemoryStream.New();
-	stream:append(serverErrorsDescr, 0, serverErrorsDescr.Length);
-	this.onImportServerErrorsDescr(stream);
+	serverErrorsDescr:Seek(0);
+	this.onImportServerErrorsDescr(serverErrorsDescr);
 
-	stream = KBEngine.MemoryStream.New();
-	stream:append(entitydefMessages, 0, entitydefMessages.Length);
-	this.onImportClientEntityDef(stream);
+	entitydefMessages:Seek(0);
+	this.onImportClientEntityDef(entitydefMessages);
 
 	this.loadingLocalMessages_ = false;
 	this.loginappMessageImported_ = true;
@@ -294,7 +295,7 @@ KBEngineLua.importMessagesFromMemoryStream = function(loginapp_clientMessages, b
 	this.isImportServerErrorsDescr_ = true;
 
 	this.currserver = "";
-	logInfo("KBEngine::importMessagesFromMemoryStream(): is successfully!");
+	logInfo("KBEngine::importMessagesFromVectorBuffer(): is successfully!");
 	return true;
 end
 
@@ -366,6 +367,7 @@ end
 KBEngineLua.Client_onImportClientEntityDef = function(stream)
 	this.onImportClientEntityDef(stream);
 	if(this._persistentInfos ~= nil) then
+		stream:Seek(0);
 		this._persistentInfos:onImportClientEntityDef(stream);
 	end
 end
@@ -533,9 +535,10 @@ KBEngineLua.onImportClientEntityDef = function(stream)
 end
 
 KBEngineLua.Client_onImportClientMessages = function( stream )
-	this.onImportClientMessages (stream);
+	this.onImportClientMessages(stream);
 
 	if(this._persistentInfos ~= nil) then
+		stream:Seek(0);
 		this._persistentInfos:onImportClientMessages(this.currserver, stream);
 	end
 end
@@ -592,6 +595,7 @@ KBEngineLua.Client_onImportServerErrorsDescr = function(stream)
 	this.onImportServerErrorsDescr(stream);
 
 	if(this._persistentInfos ~= nil) then
+		stream:Seek(0);
 		this._persistentInfos:onImportServerErrorsDescr(stream);
 	end
 end
@@ -625,7 +629,6 @@ end
 KBEngineLua.onImportClientMessagesCompleted = function()
 	logInfo("KBEngine::onImportClientMessagesCompleted: successfully! currserver=" .. 
 		this.currserver .. ", currstate=" .. this.currstate);
-	this.hello();
 
 	if(this.currserver == "loginapp") then
 		if(not this.isImportServerErrorsDescr_ and not this.loadingLocalMessages_) then
@@ -669,7 +672,6 @@ KBEngineLua.onImportEntityDefCompleted = function()
 	end
 end
 KBEngineLua.Client_onCreatedProxies = function(rndUUID, eid, entityType)
-
 	logInfo("KBEngineApp::Client_onCreatedProxies: eid(" .. eid .. "), entityType(" .. entityType .. ")!");
 
 	this.entity_uuid = rndUUID;
@@ -1667,11 +1669,7 @@ KBEngineLua._updateVolatileData = function(entityID, x, y, z, yaw, pitch, roll, 
 end
 
 KBEngineLua.login = function( username, password, data )
-	this.Destroy();
-	this.installEvents();
-	this.reset_login_datatypes();
-
-	this.connect_method = "login";
+	this.reset();
 
 	KBEngineLua.username = username;
 	KBEngineLua.password = password;
@@ -1683,6 +1681,9 @@ end
 --登录到服务端(loginapp), 登录成功后还必须登录到网关(baseapp)登录流程才算完毕
 KBEngineLua.login_loginapp = function( noconnect )
 	if noconnect then
+		this.currserver = "loginapp";
+		this.currstate = "login";
+
 		this._networkInterface:Connect(this.ip, this.port, scene_);
 	else
 		logInfo("KBEngine::login_loginapp(): send login! username=" .. this.username);
@@ -1697,9 +1698,6 @@ KBEngineLua.login_loginapp = function( noconnect )
 end
 
 KBEngineLua.onLogin_loginapp = function()
-	this.currserver = "loginapp";
-	this.currstate = "login";
-
 	this._lastTickCBTime = os.clock();
 	if not this.loginappMessageImported_ then
 		local bundle = KBEngineLua.Bundle:New();
@@ -1726,6 +1724,10 @@ end
 KBEngineLua.login_baseapp = function(noconnect)
 	if(noconnect) then
 		this._networkInterface:Disconnect();
+
+		this.currserver = "baseapp";
+		this.currstate = "";
+
 		this._networkInterface:Connect(this.baseappIP, this.baseappPort, scene_);
 	else
 		local bundle = KBEngineLua.Bundle:New();
@@ -1737,9 +1739,6 @@ KBEngineLua.login_baseapp = function(noconnect)
 end
 
 KBEngineLua.onLogin_baseapp = function()
-	this.currserver = "baseapp";
-	this.currstate = "";
-
 	this._lastTickCBTime = os.clock();
 	if not this.baseappMessageImported_ then
 		local bundle = KBEngineLua.Bundle:New();
@@ -1779,7 +1778,12 @@ KBEngineLua.Client_onHelloCB = function( stream )
 		.. "), srvEntitydefMD5(".. KBEngineLua.serverEntitydefMD5 .. "), + ctype(" .. ctype .. ")!");
 
 	this.onServerDigest();
-	this._lastTickCBTime = os.clock();
+
+	if this.currserver == "baseapp" then
+		this.onLogin_baseapp();
+	else
+		this.onLogin_loginapp();
+	end
 end
 
 KBEngineLua.onServerDigest = function()
@@ -1809,7 +1813,6 @@ KBEngineLua.Client_onLoginSuccessfully = function(stream)
 	logInfo("KBEngine::Client_onLoginSuccessfully: accountName(" .. accountName .. "), addr(" .. 
 			this.baseappIP .. ":" .. this.baseappPort .. "), datas(" .. string.len(this._serverdatas) .. ")!");
 
-	this.currstate = "loginbaseapp";
 	this.login_baseapp(true);
 end
 
@@ -1820,7 +1823,6 @@ KBEngineLua.reset = function()
 	--KBEngine.Event.clearFiredEvents();
 	KBEngineLua.clearEntities(true);
 
-	this.connect_method = "";
 	this.currserver = "";
 	this.currstate = "";
 	this._serverdatas = VectorBuffer();
@@ -1852,8 +1854,6 @@ end
 
 KBEngineLua.onOpenLoginapp_resetpassword = function()
 	logInfo("KBEngine::onOpenLoginapp_resetpassword: successfully!");
-	this.currserver = "loginapp";
-	this.currstate = "resetpassword";
 	this._lastTickCBTime = os.clock();
 
 	if(not this.loginappMessageImported_) then
@@ -1869,11 +1869,7 @@ end
 
 	--重置密码, 通过loginapp
 KBEngineLua.resetPassword = function(username)
-	this.Destroy();
-	this.installEvents();
-	this.reset_login_datatypes();
-
-	this.connect_method = "resetpassword";
+	this.reset();
 
 	this.username = username;
 	this.resetpassword_loginapp(true);
@@ -1883,6 +1879,9 @@ end
 	--重置密码, 通过loginapp
 KBEngineLua.resetpassword_loginapp = function(noconnect)
 	if(noconnect) then
+		this.currserver = "loginapp";
+		this.currstate = "resetpassword";
+
 		this._networkInterface:Connect(this.ip, this.port, scene_);
 	else
 		local bundle = KBEngineLua.Bundle:New();
@@ -1944,10 +1943,7 @@ KBEngineLua.Client_onReqAccountNewPasswordCB = function(failcode)
 end
 
 KBEngineLua.createAccount = function(username, password, data)
-	this.Destroy();
-	this.installEvents();
-
-	this.connect_method = "createAccount";
+	this.reset();
 
 	this.username = username;
 	this.password = password;
@@ -1961,6 +1957,9 @@ end
 
 KBEngineLua.createAccount_loginapp = function(noconnect)
 	if(noconnect) then
+		this.currserver = "loginapp";
+		this.currstate = "createAccount";
+
 		this._networkInterface:Connect(this.ip, this.port, scene_);
 	else
 		local bundle = KBEngineLua.Bundle:New();
@@ -1974,8 +1973,6 @@ end
 
 KBEngineLua.onOpenLoginapp_createAccount = function()
 	logInfo("KBEngine::onOpenLoginapp_createAccount: successfully!");
-	this.currserver = "loginapp";
-	this.currstate = "createAccount";
 	this._lastTickCBTime = os.clock();
 
 	if( not this.loginappMessageImported_) then
@@ -2011,8 +2008,8 @@ KBEngineLua.Client_onScriptVersionNotMatch = function(stream)
 	logInfo("Client_onScriptVersionNotMatch: verInfo=" .. this.clientScriptVersion .. "(server: " .. this.serverScriptVersion .. ")");
 	--KBEngineLua.Event.fireAll("onScriptVersionNotMatch", new object[]{clientScriptVersion, this.serverScriptVersion});
 
-	if(_persistentInfos ~= nil) then
-		_persistentInfos.onScriptVersionNotMatch(this.clientScriptVersion, this.serverScriptVersion);
+	if(this._persistentInfos ~= nil) then
+		this._persistentInfos.onScriptVersionNotMatch(this.clientScriptVersion, this.serverScriptVersion);
 	end
 end
 
@@ -2027,12 +2024,13 @@ end
 --	一些移动类应用容易掉线，可以使用该功能快速的重新与服务端建立通信
 
 KBEngineLua.reLoginBaseapp = function()
-	this.connect_method = "reloginbaseapp";
+	this.currserver = "loginapp";
+	this.currstate = "reloginbaseapp";
+
 	this._networkInterface:Connect(this.baseappIP, this.baseappPort, scene_);
 end
 
 KBEngineLua.relogin_baseapp = function()
-
 	local bundle = KBEngineLua.Bundle:New();
 	bundle:newMessage(KBEngineLua.messages["Baseapp_reLoginBaseapp"]);
 	bundle:writeString(this.username);
