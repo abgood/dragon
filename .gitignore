@@ -5,7 +5,7 @@
 *.zip
 
 tags
-Urho3DPlayer.exe
+Urho3DPlayer*.exe
 
 logs/
 outputs/
